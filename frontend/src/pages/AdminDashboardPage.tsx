@@ -29,30 +29,36 @@ export function AdminDashboardPage() {
   const loadStatistics = async () => {
     setLoading(true)
     try {
-      // TODO: Implement actual statistics API endpoint
-      // For now, use mock data based on submissions
-      const [submissions, forms] = await Promise.all([
-        apiClient.getAdminSubmissions(),
-        apiClient.getForms(),
-      ])
+      // Try to get statistics from API first, fallback to manual calculation
+      try {
+        const stats = await apiClient.getAdminStatistics()
+        setStatistics(stats)
+      } catch (apiError) {
+        // Fallback: calculate statistics from submissions
+        console.warn('Statistics API not available, calculating from submissions:', apiError)
+        const [submissions, forms] = await Promise.all([
+          apiClient.getAdminSubmissions(),
+          apiClient.getForms(),
+        ])
 
-      const stats = {
-        totalSubmissions: submissions.length,
-        pendingSubmissions: submissions.filter((s) => s.status === 'under-review').length,
-        approvedSubmissions: submissions.filter((s) => s.status === 'approved').length,
-        rejectedSubmissions: submissions.filter((s) => s.status === 'rejected').length,
-        totalForms: forms.length,
-        recentActivity: submissions
-          .slice(0, 10)
-          .map((sub) => ({
-            id: sub.submissionId,
-            type: 'submission',
-            description: `New submission ${sub.submissionId} for form ${sub.formId}`,
-            timestamp: sub.submittedAt || sub.createdAt,
-          })),
+        const stats = {
+          totalSubmissions: submissions.length,
+          pendingSubmissions: submissions.filter((s) => s.status === 'under-review').length,
+          approvedSubmissions: submissions.filter((s) => s.status === 'approved').length,
+          rejectedSubmissions: submissions.filter((s) => s.status === 'rejected').length,
+          totalForms: forms.length,
+          recentActivity: submissions
+            .slice(0, 10)
+            .map((sub) => ({
+              id: sub.submissionId,
+              type: 'submission',
+              description: `New submission ${sub.submissionId} for form ${sub.formId}`,
+              timestamp: sub.submittedAt || sub.createdAt,
+            })),
+        }
+
+        setStatistics(stats)
       }
-
-      setStatistics(stats)
     } catch (error) {
       console.error('Error loading statistics:', error)
     } finally {

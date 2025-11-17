@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from labuan_fsa.database import get_db
 from labuan_fsa.models.submission import FormSubmission
+from labuan_fsa.models.form import Form
 from labuan_fsa.schemas.submission import SubmissionResponse, SubmissionUpdate
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
@@ -154,7 +155,6 @@ async def get_statistics(
     recent_submissions = recent_result.scalars().all()
 
     # Get total forms
-    from labuan_fsa.models.form import Form
     forms_result = await db.execute(select(func.count(Form.id)))
     total_forms = forms_result.scalar() or 0
 
