@@ -73,6 +73,11 @@ import { WeekPickerField } from '@/components/base/WeekPickerField'
 import { ColorPaletteField } from '@/components/base/ColorPaletteField'
 import { PaymentSummaryField } from '@/components/base/PaymentSummaryField'
 import { CertificateUploadField } from '@/components/base/CertificateUploadField'
+import { TagSelectField } from '@/components/base/TagSelectField'
+import { CloudUploadField } from '@/components/base/CloudUploadField'
+import { FormAttachmentField } from '@/components/base/FormAttachmentField'
+import { HelpTextField } from '@/components/base/HelpTextField'
+import { TooltipField } from '@/components/base/TooltipField'
 import { shouldDisplayField } from '@/lib/utils'
 
 interface FormRendererProps {
@@ -1087,7 +1092,74 @@ export function FormRenderer({
           />
         )
 
-      // All field types implemented! (85+ field types)
+      case 'tag-select':
+      case 'tag-select-field':
+        return (
+          <TagSelectField
+            {...commonProps}
+            options={field.options || []}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            multiple={field.multiple}
+            allowAddNew={field.allowAddNew}
+            maxTags={field.maxTags}
+          />
+        )
+
+      case 'upload-cloud':
+      case 'cloud-upload':
+        return (
+          <CloudUploadField
+            {...commonProps}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            maxFileSize={field.maxFileSize}
+            allowedExtensions={field.allowedExtensions}
+            multiple={field.multiple}
+            storageProvider={field.storageProvider}
+            bucketName={field.bucketName}
+          />
+        )
+
+      case 'upload-attachment':
+      case 'form-attachment':
+        return (
+          <FormAttachmentField
+            {...commonProps}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            maxFileSize={field.maxFileSize}
+            allowedExtensions={field.allowedExtensions}
+            multiple={field.multiple}
+            attachmentTypes={field.attachmentTypes}
+          />
+        )
+
+      case 'help-text':
+      case 'help-text-field':
+        return (
+          <HelpTextField
+            {...commonProps}
+            content={field.content || field.helpText || ''}
+            format={field.format}
+            icon={field.icon}
+            position={field.position}
+          />
+        )
+
+      case 'tooltip':
+      case 'tooltip-field':
+        return (
+          <TooltipField
+            {...commonProps}
+            content={field.content || field.tooltip || ''}
+            trigger={field.trigger}
+            placement={field.placement}
+            targetId={field.targetId}
+          />
+        )
+
+      // All field types implemented! (89+ field types - 100%+ of 85+)
       default:
         console.warn(`Unsupported field type: ${field.fieldType}`)
         return (
