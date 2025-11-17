@@ -16,6 +16,11 @@ import { AddressField } from '@/components/base/AddressField'
 import { ColorPickerField } from '@/components/base/ColorPickerField'
 import { SignatureField } from '@/components/base/SignatureField'
 import { TagsField } from '@/components/base/TagsField'
+import { RichTextField } from '@/components/base/RichTextField'
+import { MarkdownField } from '@/components/base/MarkdownField'
+import { ArrayField } from '@/components/base/ArrayField'
+import { TableField } from '@/components/base/TableField'
+import { JSONField } from '@/components/base/JSONField'
 import { shouldDisplayField } from '@/lib/utils'
 
 interface FormRendererProps {
@@ -257,7 +262,73 @@ export function FormRenderer({
           />
         )
 
-      // TODO: Add more field types (rich text, markdown, etc.)
+      case 'rich-text':
+      case 'wysiwyg':
+        return (
+          <RichTextField
+            {...commonProps}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            toolbar={field.toolbar}
+            height={field.height}
+          />
+        )
+
+      case 'markdown':
+      case 'markdown-editor':
+        return (
+          <MarkdownField
+            {...commonProps}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            preview={field.preview}
+            height={field.height}
+          />
+        )
+
+      case 'array':
+      case 'array-field':
+        return (
+          <ArrayField
+            {...commonProps}
+            itemSchema={field.itemSchema}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            minItems={field.minItems}
+            maxItems={field.maxItems}
+            addButtonLabel={field.addButtonLabel}
+            removeButtonLabel={field.removeButtonLabel}
+          />
+        )
+
+      case 'table':
+      case 'data-table':
+        return (
+          <TableField
+            {...commonProps}
+            columns={field.columns}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            minRows={field.minRows}
+            maxRows={field.maxRows}
+            allowAddRows={field.allowAddRows}
+            allowRemoveRows={field.allowRemoveRows}
+          />
+        )
+
+      case 'json':
+      case 'json-editor':
+        return (
+          <JSONField
+            {...commonProps}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            height={field.height}
+            formatOnBlur={field.formatOnBlur}
+          />
+        )
+
+      // TODO: Add more field types (code editor, map picker, etc.)
       default:
         console.warn(`Unsupported field type: ${field.fieldType}`)
         return (
