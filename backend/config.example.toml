@@ -1,0 +1,79 @@
+# Labuan FSA E-Submission System - Configuration Example
+# Copy this file to config.local.toml and update with your settings
+# config.local.toml is gitignored to avoid exposing sensitive keys
+
+[app]
+name = "Labuan FSA E-Submission API"
+version = "1.0.0"
+debug = false
+environment = "development"
+
+[server]
+host = "0.0.0.0"
+port = 8000
+reload = true
+workers = 1
+
+[database]
+# PostgreSQL connection URL (asyncpg driver)
+# Format: postgresql+asyncpg://user:password@localhost:5432/database_name
+url = "postgresql+asyncpg://user:password@localhost:5432/labuan_fsa"
+echo = false
+pool_size = 20
+max_overflow = 10
+pool_pre_ping = true
+
+[security]
+# Secret key for JWT tokens
+# In production, use: secret://secrets-manager-key-name
+# This will load from AWS Secrets Manager, Azure Key Vault, or GCP Secret Manager
+secret_key = "change-me-in-production-use-secrets-manager"
+algorithm = "HS256"
+access_token_expire_minutes = 30
+refresh_token_expire_days = 7
+
+[storage]
+# Storage provider: local, s3, azure, gcp
+provider = "local"
+local_path = "./uploads"
+
+# AWS S3 Configuration (if provider = "s3")
+s3_bucket = ""
+s3_region = ""
+
+# Azure Blob Storage Configuration (if provider = "azure")
+azure_account_name = ""
+azure_container = ""
+
+# GCP Cloud Storage Configuration (if provider = "gcp")
+gcp_bucket = ""
+
+# File upload limits
+max_file_size = 10485760  # 10MB in bytes
+allowed_extensions = [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png"]
+
+[secrets_manager]
+# Secrets manager provider: local, aws, azure, gcp
+provider = "local"
+
+# AWS Secrets Manager Configuration (if provider = "aws")
+aws_region = ""
+
+# Azure Key Vault Configuration (if provider = "azure")
+azure_vault_url = ""
+
+# GCP Secret Manager Configuration (if provider = "gcp")
+gcp_project_id = ""
+
+[email]
+# Email provider: local, sendgrid, ses
+provider = "local"
+from_email = "noreply@labuanfsa.gov.my"
+from_name = "Labuan FSA"
+
+# SendGrid Configuration (if provider = "sendgrid")
+sendgrid_api_key = ""
+
+# AWS SES Configuration (if provider = "ses")
+aws_ses_region = ""
+

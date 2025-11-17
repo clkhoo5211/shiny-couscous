@@ -1,0 +1,51 @@
+"""
+Audit log model.
+
+Defines AuditLog model for system audit trail and compliance.
+"""
+
+from datetime import datetime
+from typing import Optional
+from uuid import UUID, uuid4
+
+from sqlalchemy import String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
+from sqlalchemy.orm import Mapped, mapped_column
+
+from labuan_fsa.database import Base
+
+
+class AuditLog(Base):
+    """Audit log model for system audit trail."""
+
+    __tablename__ = "audit_logs"
+
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+        server_default=func.gen_random_uuid(),
+    )
+    action_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, index=True
+    )  # create, update, delete, review, approve, reject, login, logout
+    entity_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, index=True
+    )  # form, submission, user, file
+    entity_id: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    user_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+    user_role: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    changes: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
+    user_agent: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    request_method: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
+    request_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    request_body: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    response_status: Mapped[Optional[int]] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), default=func.now(), nullable=False, index=True
+    )
+
+    def __repr__(self) -> str:
+        return f"<AuditLog(id={self.id}, action='{self.action_type}', entity='{self.entity_type}')>"
+
