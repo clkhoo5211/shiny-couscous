@@ -65,6 +65,14 @@ import { FeeCalculator } from '@/components/labuan-fsa/FeeCalculator'
 import { DocumentChecklist } from '@/components/labuan-fsa/DocumentChecklist'
 import { ComplianceCheckbox } from '@/components/labuan-fsa/ComplianceCheckbox'
 import { StatusTracker } from '@/components/labuan-fsa/StatusTracker'
+import { ButtonGroupField } from '@/components/base/ButtonGroupField'
+import { SelectWithOtherField } from '@/components/base/SelectWithOtherField'
+import { RadioWithOtherField } from '@/components/base/RadioWithOtherField'
+import { CheckboxWithOtherField } from '@/components/base/CheckboxWithOtherField'
+import { WeekPickerField } from '@/components/base/WeekPickerField'
+import { ColorPaletteField } from '@/components/base/ColorPaletteField'
+import { PaymentSummaryField } from '@/components/base/PaymentSummaryField'
+import { CertificateUploadField } from '@/components/base/CertificateUploadField'
 import { shouldDisplayField } from '@/lib/utils'
 
 interface FormRendererProps {
@@ -976,7 +984,110 @@ export function FormRenderer({
           />
         )
 
-      // All field types implemented!
+      case 'button-group':
+      case 'button-group-field':
+        return (
+          <ButtonGroupField
+            {...commonProps}
+            options={field.options || []}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            multiple={field.multiple}
+            orientation={field.orientation}
+          />
+        )
+
+      case 'select-other':
+      case 'select-with-other':
+        return (
+          <SelectWithOtherField
+            {...commonProps}
+            options={field.options || []}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            otherValue={field.otherValue}
+          />
+        )
+
+      case 'radio-other':
+      case 'radio-with-other':
+        return (
+          <RadioWithOtherField
+            {...commonProps}
+            options={field.options || []}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            otherValue={field.otherValue}
+            orientation={field.orientation}
+          />
+        )
+
+      case 'checkbox-other':
+      case 'checkbox-with-other':
+        return (
+          <CheckboxWithOtherField
+            {...commonProps}
+            options={field.options || []}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            otherValue={field.otherValue}
+            orientation={field.orientation}
+          />
+        )
+
+      case 'week':
+      case 'week-picker':
+        return (
+          <WeekPickerField
+            {...commonProps}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            min={field.min}
+            max={field.max}
+          />
+        )
+
+      case 'color-palette':
+      case 'color-palette-field':
+        return (
+          <ColorPaletteField
+            {...commonProps}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            colors={field.colors}
+            allowCustom={field.allowCustom}
+          />
+        )
+
+      case 'payment-summary':
+      case 'payment-summary-field':
+        return (
+          <PaymentSummaryField
+            {...commonProps}
+            items={field.items}
+            subtotal={field.subtotal}
+            tax={field.tax}
+            discount={field.discount}
+            total={field.total}
+            currency={field.currency}
+            value={fieldValue}
+          />
+        )
+
+      case 'upload-certificate':
+      case 'certificate-upload':
+        return (
+          <CertificateUploadField
+            {...commonProps}
+            value={fieldValue}
+            defaultValue={field.defaultValue}
+            maxFileSize={field.maxFileSize}
+            allowedFormats={field.allowedFormats}
+            multiple={field.multiple}
+          />
+        )
+
+      // All field types implemented! (85+ field types)
       default:
         console.warn(`Unsupported field type: ${field.fieldType}`)
         return (
