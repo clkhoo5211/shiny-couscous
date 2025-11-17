@@ -3,6 +3,10 @@ import { FormField, FormStep } from '@/types'
 import { InputField } from '@/components/base/InputField'
 import { SelectField } from '@/components/base/SelectField'
 import { TextAreaField } from '@/components/base/TextAreaField'
+import { CheckboxField } from '@/components/base/CheckboxField'
+import { RadioField } from '@/components/base/RadioField'
+import { DatePickerField } from '@/components/base/DatePickerField'
+import { FileUploadField } from '@/components/base/FileUploadField'
 import { shouldDisplayField } from '@/lib/utils'
 
 interface FormRendererProps {
@@ -93,7 +97,61 @@ export function FormRenderer({
           />
         )
 
-      // TODO: Add more field types (checkbox, radio, date, file upload, etc.)
+      case 'checkbox':
+      case 'checkbox-group':
+        return (
+          <CheckboxField
+            {...commonProps}
+            options={field.options || []}
+            allowOther={field.allowOther}
+            otherOptionLabel={field.otherOptionLabel}
+            otherInputPlaceholder={field.otherInputPlaceholder}
+          />
+        )
+
+      case 'radio':
+      case 'radio-group':
+        return (
+          <RadioField
+            {...commonProps}
+            options={field.options || []}
+            allowOther={field.allowOther}
+            otherOptionLabel={field.otherOptionLabel}
+            otherInputPlaceholder={field.otherInputPlaceholder}
+          />
+        )
+
+      case 'date':
+      case 'time':
+      case 'datetime-local':
+      case 'month':
+      case 'week':
+      case 'year':
+        return (
+          <DatePickerField
+            {...commonProps}
+            min={field.min}
+            max={field.max}
+          />
+        )
+
+      case 'upload-document':
+      case 'upload-image':
+      case 'upload-file':
+        return (
+          <FileUploadField
+            {...commonProps}
+            multiple={field.multiple}
+            accept={field.accept}
+            maxSize={field.maxSize}
+            maxFiles={field.maxFiles}
+            dragDrop={field.dragDrop}
+            preview={field.preview}
+            progress={field.progress}
+          />
+        )
+
+      // TODO: Add more field types (toggle, switch, rich text, markdown, etc.)
       default:
         console.warn(`Unsupported field type: ${field.fieldType}`)
         return (
