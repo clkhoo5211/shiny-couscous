@@ -182,20 +182,12 @@
 ### ⏳ Product Agent (PRODUCT-01) - Pending
 **Status**: ⏳ Pending  
 **Dependencies**: Init Complete ✅  
-**Next Action**: User activation
+**Next Action**: User activation (optional)
 
-### ⏳ Design Agent (DESIGN-01) - Next
+### ⏳ Develop Agent (DEV-01) - Next
 **Status**: ⏳ Pending  
-**Dependencies**: UX Complete ✅  
+**Dependencies**: Data Complete ✅  
 **Next Action**: Ready to activate
-
-### ⏳ Data Agent (DATA-01) - Pending
-**Status**: ⏳ Pending  
-**Dependencies**: Design → Next
-
-### ⏳ Develop Agent (DEV-01) - Pending
-**Status**: ⏳ Pending  
-**Dependencies**: Data → Next
 
 ### ⏳ DevOps Agent (DEVOPS-01) - Pending
 **Status**: ⏳ Pending  
