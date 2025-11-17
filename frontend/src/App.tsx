@@ -10,6 +10,7 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { UserDashboardPage } from './pages/UserDashboardPage'
 import { AdminDashboardPage } from './pages/AdminDashboardPage'
 import { AdminFormSchemaEditorPage } from './pages/admin/AdminFormSchemaEditorPage'
+import { AdminFormCreatePage } from './pages/admin/AdminFormCreatePage'
 import { AdminSubmissionsListPage } from './pages/admin/AdminSubmissionsListPage'
 import { AdminSubmissionReviewPage } from './pages/admin/AdminSubmissionReviewPage'
 import { AdminFormsPage } from './pages/admin/AdminFormsPage'
@@ -33,6 +34,7 @@ function App() {
       <Route path="/admin/submissions" element={<Layout><AdminSubmissionsListPage /></Layout>} />
       <Route path="/admin/submissions/:submissionId" element={<Layout><AdminSubmissionReviewPage /></Layout>} />
       <Route path="/admin/forms" element={<Layout><AdminFormsPage /></Layout>} />
+      <Route path="/admin/forms/create" element={<Layout><AdminFormCreatePage /></Layout>} />
       <Route path="/admin/forms/:formId/schema" element={<Layout><AdminFormSchemaEditorPage /></Layout>} />
       <Route path="/admin/analytics" element={<Layout><AdminAnalyticsPage /></Layout>} />
       <Route path="/admin/settings" element={<Layout><AdminSettingsPage /></Layout>} />

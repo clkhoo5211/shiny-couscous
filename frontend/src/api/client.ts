@@ -87,6 +87,50 @@ class APIClient {
     return response.data
   }
 
+  async createForm(formData: {
+    form_id: string
+    name: string
+    description?: string
+    category?: string
+    version: string
+    schema_data: any
+    is_active: boolean
+    requires_auth: boolean
+    estimated_time?: string
+  }): Promise<FormResponse> {
+    const response = await this.client.post<FormResponse>('/api/forms', formData)
+    return response.data
+  }
+
+  async updateForm(formId: string, formData: Partial<{
+    name: string
+    description?: string
+    category?: string
+    version: string
+    schema_data: any
+    is_active: boolean
+    requires_auth: boolean
+    estimated_time?: string
+  }>): Promise<FormResponse> {
+    const response = await this.client.put<FormResponse>(`/api/forms/${formId}`, formData)
+    return response.data
+  }
+
+  async updateFormSchema(formId: string, schemaData: FormSchemaResponse): Promise<FormSchemaResponse> {
+    // First update the form with the schema data
+    const form = await this.getForm(formId)
+    await this.updateForm(formId, {
+      schema_data: {
+        formId: schemaData.formId,
+        formName: schemaData.formName,
+        version: schemaData.version,
+        steps: schemaData.steps,
+        submitButton: schemaData.submitButton,
+      },
+    })
+    return schemaData
+  }
+
   // Submissions API
   async validateSubmission(
     formId: string,

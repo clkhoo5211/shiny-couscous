@@ -58,13 +58,16 @@ export function AdminFormSchemaEditorPage() {
   // Save schema mutation
   const saveMutation = useMutation({
     mutationFn: async (schemaData: FormSchemaResponse) => {
-      // TODO: Implement API endpoint for saving schema
-      // await apiClient.client.put(`/api/admin/forms/${formId}/schema`, schemaData)
-      await new Promise((resolve) => setTimeout(resolve, 500))
-      return schemaData
+      if (!formId) throw new Error('Form ID is required')
+      return await apiClient.updateFormSchema(formId, schemaData)
     },
     onSuccess: () => {
       alert('Form schema saved successfully')
+      // Refetch schema to get latest version
+      window.location.reload()
+    },
+    onError: (error: any) => {
+      alert(`Error saving schema: ${error.response?.data?.detail || error.message}`)
     },
   })
 

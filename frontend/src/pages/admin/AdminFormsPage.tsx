@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import apiClient from '@/api/client'
 import type { FormResponse } from '@/types'
 import { cn } from '@/lib/utils'
 
 export function AdminFormsPage() {
+  const navigate = useNavigate()
   const [forms, setForms] = useState<FormResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -40,7 +41,9 @@ export function AdminFormsPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Forms</h1>
           <p className="text-gray-600">Manage form schemas and configurations</p>
         </div>
-        <button className="btn btn-primary">+ Create New Form</button>
+        <button onClick={() => navigate('/admin/forms/create')} className="btn btn-primary">
+          + Create New Form
+        </button>
       </div>
 
       {/* Search */}
