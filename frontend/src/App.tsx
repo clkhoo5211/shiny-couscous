@@ -4,6 +4,8 @@ import { FormListPage } from './pages/FormListPage'
 import { FormPage } from './pages/FormPage'
 import { SubmissionListPage } from './pages/SubmissionListPage'
 import { SubmissionDetailPage } from './pages/SubmissionDetailPage'
+import { LoginPage } from './pages/LoginPage'
+import { RegisterPage } from './pages/RegisterPage'
 import { AdminDashboardPage } from './pages/AdminDashboardPage'
 import { AdminSubmissionsListPage } from './pages/admin/AdminSubmissionsListPage'
 import { AdminSubmissionReviewPage } from './pages/admin/AdminSubmissionReviewPage'
@@ -14,21 +16,21 @@ import { Layout } from './components/layout/Layout'
 
 function App() {
   return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/forms" element={<FormListPage />} />
-        <Route path="/forms/:formId" element={<FormPage />} />
-        <Route path="/submissions" element={<SubmissionListPage />} />
-        <Route path="/submissions/:submissionId" element={<SubmissionDetailPage />} />
-        <Route path="/admin" element={<AdminDashboardPage />} />
-        <Route path="/admin/submissions" element={<AdminSubmissionsListPage />} />
-        <Route path="/admin/submissions/:submissionId" element={<AdminSubmissionReviewPage />} />
-        <Route path="/admin/forms" element={<AdminFormsPage />} />
-        <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
-        <Route path="/admin/settings" element={<AdminSettingsPage />} />
-      </Routes>
-    </Layout>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/" element={<Layout><HomePage /></Layout>} />
+      <Route path="/forms" element={<Layout><FormListPage /></Layout>} />
+      <Route path="/forms/:formId" element={<Layout><FormPage /></Layout>} />
+      <Route path="/submissions" element={<Layout><SubmissionListPage /></Layout>} />
+      <Route path="/submissions/:submissionId" element={<Layout><SubmissionDetailPage /></Layout>} />
+      <Route path="/admin" element={<Layout><AdminDashboardPage /></Layout>} />
+      <Route path="/admin/submissions" element={<Layout><AdminSubmissionsListPage /></Layout>} />
+      <Route path="/admin/submissions/:submissionId" element={<Layout><AdminSubmissionReviewPage /></Layout>} />
+      <Route path="/admin/forms" element={<Layout><AdminFormsPage /></Layout>} />
+      <Route path="/admin/analytics" element={<Layout><AdminAnalyticsPage /></Layout>} />
+      <Route path="/admin/settings" element={<Layout><AdminSettingsPage /></Layout>} />
+    </Routes>
   )
 }
 

@@ -15,6 +15,8 @@ class APIClient {
   private client: AxiosInstance
   private token: string | null = null
 
+  public client: AxiosInstance
+
   constructor(baseURL: string) {
     this.client = axios.create({
       baseURL,
