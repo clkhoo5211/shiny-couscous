@@ -76,16 +76,13 @@ async def health_check() -> dict[str, str]:
 
 
 # Include routers
-from labuan_fsa.api import forms, submissions
+from labuan_fsa.api import forms, submissions, files, admin, auth
 
 app.include_router(forms.router)
 app.include_router(submissions.router)
-
-# TODO: Implement and include remaining routers
-# from labuan_fsa.api import files, admin, auth
-# app.include_router(files.router, prefix="/api/files", tags=["Files"])
-# app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
-# app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(files.router)
+app.include_router(admin.router)
+app.include_router(auth.router)
 
 
 if __name__ == "__main__":

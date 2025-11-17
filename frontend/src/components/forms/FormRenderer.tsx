@@ -7,6 +7,9 @@ import { CheckboxField } from '@/components/base/CheckboxField'
 import { RadioField } from '@/components/base/RadioField'
 import { DatePickerField } from '@/components/base/DatePickerField'
 import { FileUploadField } from '@/components/base/FileUploadField'
+import { ToggleField } from '@/components/base/ToggleField'
+import { RangeSliderField } from '@/components/base/RangeSliderField'
+import { RatingField } from '@/components/base/RatingField'
 import { shouldDisplayField } from '@/lib/utils'
 
 interface FormRendererProps {
@@ -151,7 +154,34 @@ export function FormRenderer({
           />
         )
 
-      // TODO: Add more field types (toggle, switch, rich text, markdown, etc.)
+      case 'toggle':
+      case 'switch':
+        return <ToggleField {...commonProps} />
+
+      case 'range-slider':
+      case 'slider':
+        return (
+          <RangeSliderField
+            {...commonProps}
+            min={field.min}
+            max={field.max}
+            step={field.step}
+            unit={field.unit}
+            showValue={field.showValue}
+          />
+        )
+
+      case 'rating':
+      case 'star-rating':
+        return (
+          <RatingField
+            {...commonProps}
+            max={field.max}
+            size={field.size}
+          />
+        )
+
+      // TODO: Add more field types (rich text, markdown, signature, color picker, etc.)
       default:
         console.warn(`Unsupported field type: ${field.fieldType}`)
         return (
