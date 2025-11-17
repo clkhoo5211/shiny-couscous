@@ -164,6 +164,51 @@ class APIClient {
     const response = await this.client.post('/api/files/upload', formData, config)
     return response.data
   }
+
+  // Admin API
+  async getAdminSubmissions(params?: {
+    formId?: string
+    status?: string
+    page?: number
+    pageSize?: number
+  }): Promise<SubmissionResponse[]> {
+    const response = await this.client.get<SubmissionResponse[]>('/api/admin/submissions', {
+      params,
+    })
+    return response.data
+  }
+
+  async reviewSubmission(
+    submissionId: string,
+    updateData: {
+      status?: string
+      reviewNotes?: string
+      requestedInfo?: string
+    }
+  ): Promise<SubmissionResponse> {
+    const response = await this.client.put<SubmissionResponse>(
+      `/api/admin/submissions/${submissionId}`,
+      updateData
+    )
+    return response.data
+  }
+
+  async getAdminStatistics(): Promise<{
+    totalSubmissions: number
+    pendingSubmissions: number
+    approvedSubmissions: number
+    rejectedSubmissions: number
+    totalForms: number
+    recentActivity: Array<{
+      id: string
+      type: string
+      description: string
+      timestamp: string
+    }>
+  }> {
+    const response = await this.client.get('/api/admin/statistics')
+    return response.data
+  }
 }
 
 // Create singleton instance

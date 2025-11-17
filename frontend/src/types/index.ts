@@ -100,6 +100,12 @@ export interface SubmissionData {
   }
 }
 
+export interface SubmissionUpdate {
+  status?: string
+  reviewNotes?: string
+  requestedInfo?: string
+}
+
 export interface SubmissionCreateRequest {
   data: SubmissionData
   files?: FileUploadReference[]

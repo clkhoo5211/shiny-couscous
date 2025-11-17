@@ -102,6 +102,9 @@ async def review_submission(
         submission.requested_info = update_data.requested_info
 
     # TODO: Set reviewed_by and reviewed_at from authentication
+    from datetime import datetime
+    submission.reviewed_at = datetime.utcnow()
+    submission.reviewed_by = "admin"  # TODO: Replace with actual user ID from auth
 
     await db.commit()
     await db.refresh(submission)
@@ -110,4 +113,68 @@ async def review_submission(
     # TODO: Send notification email
 
     return SubmissionResponse.model_validate(submission)
+
+
+@router.get("/statistics")
+async def get_statistics(
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """
+    Get admin dashboard statistics.
+
+    Args:
+        db: Database session
+
+    Returns:
+        Statistics dictionary
+    """
+    # TODO: Add admin authentication check
+
+    from sqlalchemy import func, case
+
+    # Get total submissions
+    total_result = await db.execute(select(func.count(FormSubmission.id)))
+    total_submissions = total_result.scalar() or 0
+
+    # Get submissions by status
+    status_counts = await db.execute(
+        select(
+            FormSubmission.status,
+            func.count(FormSubmission.id).label('count')
+        ).group_by(FormSubmission.status)
+    )
+    status_dict = {row.status: row.count for row in status_counts}
+
+    # Get recent activity (last 10 submissions)
+    recent_result = await db.execute(
+        select(FormSubmission)
+        .order_by(FormSubmission.created_at.desc())
+        .limit(10)
+    )
+    recent_submissions = recent_result.scalars().all()
+
+    # Get total forms
+    from labuan_fsa.models.form import Form
+    forms_result = await db.execute(select(func.count(Form.id)))
+    total_forms = forms_result.scalar() or 0
+
+    # Build recent activity
+    recent_activity = [
+        {
+            "id": sub.submission_id,
+            "type": "submission",
+            "description": f"New submission {sub.submission_id} for form {sub.form_id}",
+            "timestamp": sub.submitted_at.isoformat() if sub.submitted_at else sub.created_at.isoformat(),
+        }
+        for sub in recent_submissions
+    ]
+
+    return {
+        "totalSubmissions": total_submissions,
+        "pendingSubmissions": status_dict.get("under-review", 0),
+        "approvedSubmissions": status_dict.get("approved", 0),
+        "rejectedSubmissions": status_dict.get("rejected", 0),
+        "totalForms": total_forms,
+        "recentActivity": recent_activity,
+    }
 

@@ -1,0 +1,263 @@
+import React, { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import apiClient from '@/api/client'
+import type { SubmissionResponse } from '@/types'
+import { cn } from '@/lib/utils'
+import { StatusTracker } from '@/components/labuan-fsa/StatusTracker'
+
+export function AdminSubmissionReviewPage() {
+  const { submissionId } = useParams<{ submissionId: string }>()
+  const navigate = useNavigate()
+  const [submission, setSubmission] = useState<SubmissionResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [reviewing, setReviewing] = useState(false)
+  const [reviewData, setReviewData] = useState({
+    status: '',
+    reviewNotes: '',
+    requestedInfo: '',
+  })
+
+  // Load submission
+  useEffect(() => {
+    if (submissionId) {
+      loadSubmission()
+    }
+  }, [submissionId])
+
+  const loadSubmission = async () => {
+    setLoading(true)
+    try {
+      const data = await apiClient.getSubmission(submissionId!)
+      setSubmission(data)
+      setReviewData({
+        status: data.status || '',
+        reviewNotes: data.reviewNotes || '',
+        requestedInfo: data.requestedInfo || '',
+      })
+    } catch (error) {
+      console.error('Error loading submission:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleReview = async () => {
+    if (!submissionId || !reviewData.status) {
+      alert('Please select a status')
+      return
+    }
+
+    setReviewing(true)
+    try {
+      await apiClient.reviewSubmission(submissionId, reviewData)
+      alert('Submission reviewed successfully')
+      navigate('/admin/submissions')
+    } catch (error) {
+      console.error('Error reviewing submission:', error)
+      alert('Error reviewing submission')
+    } finally {
+      setReviewing(false)
+    }
+  }
+
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-100 text-green-800'
+      case 'rejected':
+        return 'bg-red-100 text-red-800'
+      case 'under-review':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'submitted':
+        return 'bg-blue-100 text-blue-800'
+      case 'draft':
+        return 'bg-gray-100 text-gray-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-gray-500">Loading submission...</div>
+      </div>
+    )
+  }
+
+  if (!submission) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-red-600">Submission not found</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <button
+          onClick={() => navigate('/admin/submissions')}
+          className="text-sm text-gray-600 hover:text-gray-900 mb-4"
+        >
+          ← Back to Submissions
+        </button>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Review Submission</h1>
+        <p className="text-gray-600">Submission ID: {submission.submissionId}</p>
+      </div>
+
+      {/* Status Tracker */}
+      <div className="bg-white shadow rounded-lg p-6">
+        <StatusTracker
+          fieldId="status-tracker"
+          fieldName="status"
+          label="Application Status"
+          currentStatus={submission.status as any}
+          applicationId={submission.submissionId}
+          submittedDate={submission.submittedAt}
+        />
+      </div>
+
+      {/* Submission Details */}
+      <div className="bg-white shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">Submission Details</h2>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="text-sm font-medium text-gray-700">Form ID</label>
+            <p className="text-sm text-gray-900">{submission.formId}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700">Status</label>
+            <p>
+              <span
+                className={cn(
+                  'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
+                  getStatusColor(submission.status)
+                )}
+              >
+                {submission.status}
+              </span>
+            </p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700">Submitted By</label>
+            <p className="text-sm text-gray-900">{submission.submittedBy || '-'}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700">Submitted At</label>
+            <p className="text-sm text-gray-900">
+              {submission.submittedAt
+                ? new Date(submission.submittedAt).toLocaleString()
+                : '-'}
+            </p>
+          </div>
+        </div>
+
+        {/* Submission Data */}
+        <div className="mt-6">
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Submitted Data</label>
+          <pre className="bg-gray-50 p-4 rounded-md overflow-x-auto text-sm">
+            {JSON.stringify(submission.submittedData, null, 2)}
+          </pre>
+        </div>
+      </div>
+
+      {/* Review Form */}
+      <div className="bg-white shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">Review Submission</h2>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+              Decision <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="status"
+              value={reviewData.status}
+              onChange={(e) => setReviewData({ ...reviewData, status: e.target.value })}
+              className="input w-full"
+              required
+            >
+              <option value="">Select status...</option>
+              <option value="under-review">Under Review</option>
+              <option value="approved">Approve</option>
+              <option value="rejected">Reject</option>
+              <option value="additional-info-required">Request Additional Information</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="reviewNotes" className="block text-sm font-medium text-gray-700 mb-1">
+              Review Notes
+            </label>
+            <textarea
+              id="reviewNotes"
+              value={reviewData.reviewNotes}
+              onChange={(e) => setReviewData({ ...reviewData, reviewNotes: e.target.value })}
+              rows={4}
+              className="input w-full"
+              placeholder="Add review notes..."
+            />
+          </div>
+
+          <div>
+            <label htmlFor="requestedInfo" className="block text-sm font-medium text-gray-700 mb-1">
+              Requested Information
+            </label>
+            <textarea
+              id="requestedInfo"
+              value={reviewData.requestedInfo}
+              onChange={(e) => setReviewData({ ...reviewData, requestedInfo: e.target.value })}
+              rows={4}
+              className="input w-full"
+              placeholder="List any additional information required..."
+            />
+          </div>
+
+          <div className="flex space-x-3 pt-4">
+            <button
+              onClick={handleReview}
+              disabled={reviewing || !reviewData.status}
+              className={cn(
+                'btn btn-primary',
+                (reviewing || !reviewData.status) && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              {reviewing ? 'Processing...' : 'Submit Review'}
+            </button>
+            <button
+              onClick={() => navigate('/admin/submissions')}
+              className="btn btn-secondary"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Previous Review Notes */}
+      {submission.reviewNotes && (
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Previous Review Notes</h2>
+          <p className="text-sm text-gray-700 whitespace-pre-wrap">{submission.reviewNotes}</p>
+          {submission.reviewedBy && (
+            <p className="text-xs text-gray-500 mt-2">
+              Reviewed by: {submission.reviewedBy} on{' '}
+              {submission.reviewedAt
+                ? new Date(submission.reviewedAt).toLocaleString()
+                : 'Unknown date'}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Requested Information */}
+      {submission.requestedInfo && (
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Requested Information</h2>
+          <p className="text-sm text-gray-700 whitespace-pre-wrap">{submission.requestedInfo}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
