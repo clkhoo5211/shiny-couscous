@@ -152,7 +152,7 @@ def validate_form_data(form_schema: dict[str, Any], data: dict[str, Any]) -> tup
 
 def validate_file_upload(
     file_size: int, file_name: str, allowed_extensions: list[str], max_size: int
-) -> tuple[bool, Optional[str]]:
+) -> tuple[bool, str | None]:
     """
     Validate file upload.
 
