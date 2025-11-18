@@ -141,6 +141,52 @@ async def health_check() -> dict[str, str]:
     return {"status": "healthy"}
 
 
+# Exception handlers to ensure CORS headers on errors
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Global exception handler to ensure CORS headers are always present."""
+    # Get origin from request
+    origin = request.headers.get("origin", "")
+    
+    # Create response with CORS headers
+    response = JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "detail": str(exc),
+            "type": type(exc).__name__,
+        }
+    )
+    
+    # Add CORS headers manually
+    if origin and ("github.io" in origin or "localhost" in origin or "127.0.0.1" in origin):
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+    
+    return response
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """HTTP exception handler with CORS headers."""
+    origin = request.headers.get("origin", "")
+    
+    response = JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail}
+    )
+    
+    # Add CORS headers
+    if origin and ("github.io" in origin or "localhost" in origin or "127.0.0.1" in origin):
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+    
+    return response
+
+
 # Include routers
 from labuan_fsa.api import forms, submissions, files, admin, auth, payments
 
