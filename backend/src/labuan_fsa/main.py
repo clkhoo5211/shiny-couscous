@@ -32,6 +32,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     except Exception as e:
         print(f"⚠️  Database initialization failed (this is OK for testing): {e}")
         print("   The API will work but database-dependent endpoints may fail.")
+        import traceback
+        traceback.print_exc()
     
     yield
     
