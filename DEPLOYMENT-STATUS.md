@@ -1,132 +1,87 @@
-# 🚀 Deployment Status & Access URLs
+# 🔍 Deployment Status Check
 
-## ✅ Current Deployment Status
+## ❌ Current Status: Still Failing
 
-### **Frontend (GitHub Pages)**
-- ✅ **URL**: https://clkhoo5211.github.io/shiny-couscous/
-- ✅ **Status**: Deployed and accessible
-- ⚠️ **Issue**: Client-side routing returns 404 (FIXED, awaiting redeployment)
-- 🔄 **Fix**: Added `404.html` for SPA routing (pushed, waiting for GitHub Actions)
+**Error:** `[Errno 99] Cannot assign requested address`
 
-### **Backend API (Vercel)**
-- ✅ **URL**: https://shiny-couscous-tau.vercel.app
-- ✅ **Status**: Deployed and accessible
-- ✅ **Health Check**: `/health` returns `{"status":"healthy"}`
-- ✅ **API Docs**: https://shiny-couscous-tau.vercel.app/docs
+**Last Check:** Just now
+- `/health` → ✅ Works
+- `/api/forms` → ❌ Still returns `[Errno 99]` error
+- Frontend → ❌ Shows "Error loading forms: Request failed with status code 500"
 
-### **Database (Supabase)**
-- ✅ **Status**: Configured and connected
-- ✅ **Tables**: Auto-created on first API request
+## 🔧 Fixes Applied
 
-## 🔗 Access URLs
+1. ✅ **Fixed serverless detection** - Now checks multiple Vercel environment variables:
+   - `VERCEL=1`
+   - `VERCEL_ENV`
+   - `VERCEL_URL`
+   - Also defaults to serverless if no traditional server indicators
 
-### **Frontend**
-- **Home**: https://clkhoo5211.github.io/shiny-couscous/
-- **Forms**: https://clkhoo5211.github.io/shiny-couscous/forms (404 until redeployment)
-- **Submissions**: https://clkhoo5211.github.io/shiny-couscous/submissions (404 until redeployment)
-- **Admin**: https://clkhoo5211.github.io/shiny-couscous/admin (404 until redeployment)
+2. ✅ **Added logging** - Will log serverless detection in Vercel logs
 
-### **Backend API**
-- **Root**: https://shiny-couscous-tau.vercel.app/
-- **Health**: https://shiny-couscous-tau.vercel.app/health
-- **API Docs**: https://shiny-couscous-tau.vercel.app/docs
+## 🔍 Next Steps to Debug
 
-## 🧪 API Endpoints Test Results
+### Option 1: Check Vercel Logs
 
-### ✅ Working Endpoints
-- `GET /` → `{"name":"Labuan FSA E-Submission API","version":"1.0.0","status":"running"}`
-- `GET /health` → `{"status":"healthy"}`
-- `GET /docs` → Swagger UI loads correctly
+Go to Vercel Dashboard → Deployments → Latest → Functions → `api/index.py` → Logs
 
-### ⚠️ Endpoints Returning 500 (Database Issue)
-- `GET /api/forms` → Internal Server Error
-- `POST /api/auth/register` → Internal Server Error
-- `GET /api/admin/statistics` → Internal Server Error
-
-**Root Cause**: Database connection may not be initialized on Vercel, or Supabase connection string needs verification.
-
-## 🔧 Pending Fixes
-
-### 1. **Frontend 404 Routing** ✅ FIXED (Awaiting Deployment)
-- **Issue**: Client-side routes return 404
-- **Fix**: Added `404.html` creation in GitHub Actions workflow
-- **Status**: Code pushed, waiting for GitHub Actions to deploy
-- **Expected**: Routes will work after next deployment (2-3 minutes)
-
-### 2. **API 500 Errors** ⚠️ NEEDS INVESTIGATION
-- **Issue**: API endpoints returning Internal Server Error
-- **Possible Causes**:
-  - Database connection string not set in Vercel
-  - Database tables not created
-  - Database initialization failing
-- **Action Required**: Check Vercel logs and environment variables
-
-### 3. **Frontend API Connection** ⚠️ NEEDS CONFIGURATION
-- **Issue**: Frontend defaulting to `http://localhost:8000`
-- **Fix**: Set `VITE_API_URL` secret in GitHub repository
-- **Action Required**:
-  1. Go to: https://github.com/clkhoo5211/shiny-couscous/settings/secrets/actions
-  2. Add secret: `VITE_API_URL` = `https://shiny-couscous-tau.vercel.app`
-  3. Trigger new deployment
-
-## 📋 Next Steps
-
-### Immediate (Do Now)
-1. ✅ Wait for GitHub Actions to complete frontend redeployment (~2-3 minutes)
-2. ⬜️ Set `VITE_API_URL` secret in GitHub repository
-3. ⬜️ Check Vercel logs for database connection errors
-4. ⬜️ Verify Supabase connection string in Vercel environment variables
-
-### After Fixes
-1. Test frontend routing (all pages should load)
-2. Test API endpoints (forms, auth, etc.)
-3. Test end-to-end form submission flow
-4. Test admin dashboard functionality
-
-## 🔍 Debugging Steps
-
-### Check Frontend Deployment
-1. Go to: https://github.com/clkhoo5211/shiny-couscous/actions
-2. Check latest workflow run
-3. Verify build and deploy completed successfully
-
-### Check Backend Deployment
-1. Go to: https://vercel.com/dashboard
-2. Select project: `shiny-couscous`
-3. Check Functions tab for errors
-4. Check Environment Variables for database connection
-
-### Check API Health
-```bash
-curl https://shiny-couscous-tau.vercel.app/health
-# Expected: {"status":"healthy"}
+Look for:
+```
+🌐 Serverless environment detected - VERCEL=..., VERCEL_ENV=..., VERCEL_URL=...
 ```
 
-### Test Frontend Routes (After Redeployment)
-- Home: https://clkhoo5211.github.io/shiny-couscous/
-- Forms: https://clkhoo5211.github.io/shiny-couscous/forms
-- Submissions: https://clkhoo5211.github.io/shiny-couscous/submissions
-- Admin: https://clkhoo5211.github.io/shiny-couscous/admin
+If this message is **NOT** appearing, the serverless detection is failing.
 
-## ✅ Success Criteria
+### Option 2: Force NullPool (If detection still fails)
 
-- [x] Frontend deployed to GitHub Pages
-- [x] Backend deployed to Vercel
-- [x] API health endpoint working
-- [ ] Frontend routes working (404 fix deployed)
-- [ ] API endpoints responding correctly (500 fix)
-- [ ] Frontend connected to backend API
-- [ ] Full form submission flow working
-- [ ] Admin dashboard accessible and functional
+If serverless detection still doesn't work, we can force NullPool for all PostgreSQL connections in production.
 
-## 🎯 Current Status Summary
+**Alternative fix:** Change database.py to ALWAYS use NullPool for PostgreSQL:
+```python
+# Always use NullPool - safer for serverless
+engine = create_async_engine(
+    database_url,
+    echo=settings.database.echo,
+    poolclass=NullPool,  # Always NullPool
+    pool_pre_ping=False,
+)
+```
 
-| Component | Status | URL | Issues |
-|-----------|--------|-----|--------|
-| Frontend | ✅ Deployed | https://clkhoo5211.github.io/shiny-couscous/ | 404 routing (fixed, awaiting deploy) |
-| Backend API | ✅ Deployed | https://shiny-couscous-tau.vercel.app | 500 errors on DB endpoints |
-| Database | ✅ Configured | Supabase | Connection verification needed |
-| CI/CD | ✅ Working | GitHub Actions | - |
+But this would disable connection pooling even for traditional servers, so only use as last resort.
 
-**Overall Progress**: 🟡 ~60% Complete (Deployed but needs fixes)
+### Option 3: Check if DATABASE_URL is correct format
 
+Verify the DATABASE_URL in Vercel:
+- Should be: `postgresql+asyncpg://...` or `postgresql://...`
+- Our code converts `postgresql://` to `postgresql+asyncpg://` automatically
+
+### Option 4: Verify Supabase Connection
+
+Test Supabase connection directly:
+```bash
+# From local machine
+psql "postgresql://postgres:1KJibOLhhk7e6t9D@db.mwvyldzcutztjenscbyr.supabase.co:5432/postgres" -c "SELECT 1"
+```
+
+## 📊 Current Test Results
+
+| Endpoint | Status | Response |
+|----------|--------|----------|
+| `/` | ✅ | `{"name": "Labuan FSA E-Submission API", ...}` |
+| `/health` | ✅ | `{"status": "healthy"}` |
+| `/api/forms` | ❌ | `{"detail": "[Errno 99] Cannot assign requested address"}` |
+| `/api/submissions` | ❌ | `{"detail": "[Errno 99] Cannot assign requested address"}` |
+| `/api/admin/submissions` | ❌ | `{"detail": "[Errno 99] Cannot assign requested address"}` |
+
+## 🎯 Expected After Fix
+
+All database endpoints should return:
+- `[]` (empty array) if no data
+- Proper JSON response with data
+- NOT `[Errno 99]` error
+
+## 📝 Notes
+
+The new code with improved serverless detection has been pushed. Wait 2-3 minutes for Vercel to auto-deploy, then test again.
+
+If still failing, check Vercel logs to see if serverless detection is working.
