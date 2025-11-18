@@ -189,15 +189,15 @@ async def seed_sample_form_endpoint(
     This endpoint creates the sample form in the production database.
     TODO: Add admin authentication check and remove after production setup.
     """
-    from labuan_fsa.models.form import Form
-    
-    # Import the schema creation function
-    import sys
-    from pathlib import Path
-    backend_dir = Path(__file__).parent.parent.parent.parent
-    sys.path.insert(0, str(backend_dir / "scripts"))
-    
-    from seed_sample_form import create_labuan_company_management_form_schema
+    # Import the schema creation function inline to avoid path issues
+    def create_labuan_company_management_form_schema():
+        """Create the Labuan Company Management License Application form schema."""
+        import sys
+        from pathlib import Path
+        backend_dir = Path(__file__).parent.parent.parent.parent
+        sys.path.insert(0, str(backend_dir / "scripts"))
+        from seed_sample_form import create_labuan_company_management_form_schema as _create
+        return _create()
     
     form_id = "labuan-company-management-license"
     
