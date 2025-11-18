@@ -1,12 +1,14 @@
 {
   "version": 2,
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "backend/**"
+    }
+  },
   "builds": [
     {
       "src": "api/index.py",
-      "use": "@vercel/python",
-      "config": {
-        "includeFiles": "backend/**"
-      }
+      "use": "@vercel/python"
     }
   ],
   "routes": [
@@ -16,4 +18,3 @@
     }
   ]
 }
-
