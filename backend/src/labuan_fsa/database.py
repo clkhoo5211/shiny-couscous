@@ -25,8 +25,21 @@ database_url = settings.database.url
 is_sqlite = "sqlite" in database_url.lower()
 
 # Detect serverless environment (Vercel, AWS Lambda, etc.)
-# Vercel sets VERCEL=1, AWS Lambda sets AWS_LAMBDA_FUNCTION_NAME
-is_serverless = os.getenv("VERCEL") == "1" or os.getenv("AWS_LAMBDA_FUNCTION_NAME") is not None
+# Vercel sets VERCEL=1 or VERCEL_ENV or VERCEL_URL
+# AWS Lambda sets AWS_LAMBDA_FUNCTION_NAME
+# Also check for common serverless indicators
+vercel_env = os.getenv("VERCEL") or os.getenv("VERCEL_ENV") or os.getenv("VERCEL_URL")
+is_serverless = (
+    vercel_env is not None or 
+    os.getenv("AWS_LAMBDA_FUNCTION_NAME") is not None or
+    # Default to serverless if no traditional server indicators
+    # (Traditional servers usually have PORT or HOST set explicitly)
+    (os.getenv("PORT") is None and os.getenv("HOST") is None)
+)
+
+# Log detection for debugging
+if is_serverless:
+    print(f"🌐 Serverless environment detected - VERCEL={os.getenv('VERCEL')}, VERCEL_ENV={os.getenv('VERCEL_ENV')}, VERCEL_URL={os.getenv('VERCEL_URL')}")
 
 # Create async engine
 # SQLite requires NullPool and different connection parameters
