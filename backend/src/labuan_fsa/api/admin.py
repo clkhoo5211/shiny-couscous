@@ -178,3 +178,60 @@ async def get_statistics(
         "recentActivity": recent_activity,
     }
 
+
+@router.post("/seed-sample-form")
+async def seed_sample_form_endpoint(
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """
+    Seed sample Labuan Company Management License form (Temporary endpoint).
+    
+    This endpoint creates the sample form in the production database.
+    TODO: Add admin authentication check and remove after production setup.
+    """
+    from labuan_fsa.models.form import Form
+    
+    # Import the schema creation function
+    import sys
+    from pathlib import Path
+    backend_dir = Path(__file__).parent.parent.parent.parent
+    sys.path.insert(0, str(backend_dir / "scripts"))
+    
+    from seed_sample_form import create_labuan_company_management_form_schema
+    
+    form_id = "labuan-company-management-license"
+    
+    # Check if form already exists
+    result = await db.execute(select(Form).where(Form.form_id == form_id))
+    existing_form = result.scalar_one_or_none()
+    
+    schema_data = create_labuan_company_management_form_schema()
+    
+    if existing_form:
+        existing_form.name = schema_data["formName"]
+        existing_form.description = "Application for Licence to Carry on Labuan Company Management Business under Sections 131, Labuan Financial Services and Securities Act 2010"
+        existing_form.category = "Licensing"
+        existing_form.version = schema_data["version"]
+        existing_form.schema_data = schema_data
+        existing_form.is_active = True
+        existing_form.requires_auth = True
+        existing_form.estimated_time = "2-3 hours"
+        await db.commit()
+        return {"status": "success", "message": f"Form '{form_id}' updated", "formId": form_id}
+    else:
+        new_form = Form(
+            form_id=form_id,
+            name=schema_data["formName"],
+            description="Application for Licence to Carry on Labuan Company Management Business under Sections 131, Labuan Financial Services and Securities Act 2010",
+            category="Licensing",
+            version=schema_data["version"],
+            schema_data=schema_data,
+            is_active=True,
+            requires_auth=True,
+            estimated_time="2-3 hours",
+        )
+        db.add(new_form)
+        await db.commit()
+        await db.refresh(new_form)
+        return {"status": "success", "message": f"Form '{form_id}' created", "formId": form_id}
+
