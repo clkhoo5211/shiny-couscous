@@ -24,6 +24,18 @@ settings = get_settings()
 database_url = settings.database.url
 is_sqlite = "sqlite" in database_url.lower()
 
+# CRITICAL: If using Supabase Transaction Pooler (pgbouncer), disable prepared statements
+# pgbouncer in transaction mode doesn't support prepared statements properly
+# Check if using pooler (contains "pooler" or port 6543)
+is_pooler = "pooler" in database_url.lower() or ":6543" in database_url
+if is_pooler and "postgresql" in database_url.lower():
+    # Add statement_cache_size=0 as query parameter to disable prepared statements
+    # This works at the asyncpg driver level
+    separator = "&" if "?" in database_url else "?"
+    database_url = f"{database_url}{separator}statement_cache_size=0"
+    print("⚠️  Transaction Pooler detected - disabling prepared statements (statement_cache_size=0)")
+    print(f"   Modified URL: {database_url[:80]}...")
+
 # Detect serverless environment (Vercel, AWS Lambda, etc.)
 # Vercel sets VERCEL=1 or VERCEL_ENV or VERCEL_URL
 # AWS Lambda sets AWS_LAMBDA_FUNCTION_NAME
@@ -84,12 +96,9 @@ else:
         
         # Use NullPool - no connection pooling in serverless
         # For asyncpg, connect_args should be minimal - timeout handled differently
-        # CRITICAL: If using Supabase Transaction Pooler (pgbouncer), disable prepared statements
-        # pgbouncer in transaction mode doesn't support prepared statements properly
+        # NOTE: statement_cache_size=0 is already added to database_url above if using pooler
         connect_args = {}
         if "postgresql" in database_url.lower():
-            # Check if using pooler (contains "pooler" or port 6543)
-            is_pooler = "pooler" in database_url.lower() or ":6543" in database_url
             # asyncpg connection parameters
             connect_args = {
                 "server_settings": {
@@ -97,10 +106,6 @@ else:
                 },
                 "command_timeout": 10,  # Command timeout in seconds
             }
-            # CRITICAL: Disable prepared statements for pgbouncer (Transaction Pooler)
-            if is_pooler:
-                connect_args["statement_cache_size"] = 0
-                print("⚠️  Transaction Pooler detected - disabling prepared statements (statement_cache_size=0)")
         
         engine = create_async_engine(
             database_url,
