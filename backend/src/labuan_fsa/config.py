@@ -47,7 +47,24 @@ class DatabaseConfig(BaseSettings):
     max_overflow: int = 10
     pool_pre_ping: bool = True
 
-    model_config = SettingsConfigDict(env_prefix="DB_", case_sensitive=False)
+    model_config = SettingsConfigDict(
+        env_prefix="DB_", 
+        case_sensitive=False,
+        extra="ignore",
+    )
+    
+    def __init__(self, **kwargs):
+        """Override to check DATABASE_URL if DB_URL not set."""
+        import os
+        # Check DATABASE_URL first (common convention), then DB_URL
+        if "url" not in kwargs:
+            database_url = os.getenv("DATABASE_URL") or os.getenv("DB_URL")
+            if database_url:
+                # Ensure asyncpg driver if it's a PostgreSQL URL
+                if database_url.startswith("postgresql://") and "+asyncpg" not in database_url:
+                    database_url = database_url.replace("postgresql://", "postgresql+asyncpg://")
+                kwargs["url"] = database_url
+        super().__init__(**kwargs)
 
 
 class SecurityConfig(BaseSettings):

@@ -14,6 +14,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from labuan_fsa.config import get_settings
 from labuan_fsa.database import close_db, init_db
@@ -141,14 +142,70 @@ async def health_check() -> dict[str, str]:
     return {"status": "healthy"}
 
 
-# Exception handlers to ensure CORS headers on errors
+# CORS middleware MUST process all responses, including errors
+class CORSEnforcementMiddleware(BaseHTTPMiddleware):
+    """Middleware to ensure CORS headers on ALL responses, including errors."""
+    async def dispatch(self, request: Request, call_next):
+        origin = request.headers.get("origin", "")
+        is_allowed_origin = (
+            origin and (
+                "github.io" in origin or 
+                "localhost" in origin or 
+                "127.0.0.1" in origin
+            )
+        )
+        
+        try:
+            response = await call_next(request)
+        except Exception as exc:
+            # Catch ANY exception and add CORS headers
+            response = JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={
+                    "detail": str(exc),
+                    "type": type(exc).__name__,
+                }
+            )
+        
+        # ALWAYS add CORS headers to response, even if error occurred
+        if is_allowed_origin:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+            response.headers["Access-Control-Expose-Headers"] = "*"
+        
+        # Handle preflight requests
+        if request.method == "OPTIONS":
+            response = JSONResponse(status_code=200, content={})
+            if is_allowed_origin:
+                response.headers["Access-Control-Allow-Origin"] = origin
+                response.headers["Access-Control-Allow-Credentials"] = "true"
+                response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+                response.headers["Access-Control-Allow-Headers"] = "*"
+                response.headers["Access-Control-Max-Age"] = "600"
+        
+        return response
+
+
+# Add CORS enforcement middleware BEFORE exception handlers
+# This ensures ALL responses get CORS headers
+app.add_middleware(CORSEnforcementMiddleware)
+
+
+# Exception handlers as backup (in case middleware doesn't catch it)
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler to ensure CORS headers are always present."""
-    # Get origin from request
     origin = request.headers.get("origin", "")
+    is_allowed_origin = (
+        origin and (
+            "github.io" in origin or 
+            "localhost" in origin or 
+            "127.0.0.1" in origin
+        )
+    )
     
-    # Create response with CORS headers
     response = JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
@@ -158,10 +215,10 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
     
     # Add CORS headers manually
-    if origin and ("github.io" in origin or "localhost" in origin or "127.0.0.1" in origin):
+    if is_allowed_origin:
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
-        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
         response.headers["Access-Control-Allow-Headers"] = "*"
     
     return response
@@ -171,6 +228,13 @@ async def global_exception_handler(request: Request, exc: Exception):
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """HTTP exception handler with CORS headers."""
     origin = request.headers.get("origin", "")
+    is_allowed_origin = (
+        origin and (
+            "github.io" in origin or 
+            "localhost" in origin or 
+            "127.0.0.1" in origin
+        )
+    )
     
     response = JSONResponse(
         status_code=exc.status_code,
@@ -178,10 +242,10 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     )
     
     # Add CORS headers
-    if origin and ("github.io" in origin or "localhost" in origin or "127.0.0.1" in origin):
+    if is_allowed_origin:
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
-        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
         response.headers["Access-Control-Allow-Headers"] = "*"
     
     return response
