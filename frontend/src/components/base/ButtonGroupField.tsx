@@ -47,9 +47,9 @@ export function ButtonGroupField({
       const newValues = currentValues.includes(optionValue)
         ? currentValues.filter((v) => v !== optionValue)
         : [...currentValues, optionValue]
-      onChange(newValues)
+      onChange(newValues as any)
     } else {
-      onChange(optionValue)
+      onChange(optionValue as any)
     }
   }
 
