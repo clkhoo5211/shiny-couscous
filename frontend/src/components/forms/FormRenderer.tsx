@@ -261,7 +261,6 @@ export function FormRenderer({
         )
 
       case 'phone':
-      case 'input-tel':
         return (
           <PhoneField
             {...commonProps}
@@ -843,7 +842,6 @@ export function FormRenderer({
           />
         )
 
-      case 'year':
       case 'year-picker':
         return (
           <YearPickerField
@@ -1063,7 +1061,6 @@ export function FormRenderer({
           />
         )
 
-      case 'color-palette':
       case 'color-palette-field':
         return (
           <ColorPaletteField
