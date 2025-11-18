@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react'
 import { BaseFieldProps, SelectOption } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -35,8 +36,8 @@ export function RadioField({
   className,
 }: RadioFieldProps) {
   const fieldValue = value ?? defaultValue ?? ''
-  const [showOtherInput, setShowOtherInput] = React.useState(false)
-  const [otherValue, setOtherValue] = React.useState('')
+  const [showOtherInput, setShowOtherInput] = useState(false)
+  const [otherValue, setOtherValue] = useState('')
 
   // Handle radio change
   const handleChange = (optionValue: string) => {
@@ -57,7 +58,7 @@ export function RadioField({
   }
 
   // Check if "Other" option is selected
-  React.useEffect(() => {
+  useEffect(() => {
     if (allowOther && fieldValue && !options.some((opt) => opt.value === fieldValue)) {
       setShowOtherInput(true)
       setOtherValue(fieldValue === '__other__' ? '' : fieldValue)

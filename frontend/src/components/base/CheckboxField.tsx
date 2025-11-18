@@ -1,3 +1,4 @@
+import React, { useState } from 'react'
 import { BaseFieldProps, SelectOption } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -47,8 +48,8 @@ export function CheckboxField({
     ? []
     : (value ?? defaultValue ?? [])
 
-  const [showOtherInput, setShowOtherInput] = React.useState(false)
-  const [otherValue, setOtherValue] = React.useState('')
+  const [showOtherInput, setShowOtherInput] = useState(false)
+  const [otherValue, setOtherValue] = useState('')
 
   // Handle single checkbox change
   const handleSingleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
