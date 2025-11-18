@@ -21,8 +21,8 @@ export function FieldPropertyEditor({ field, fieldTypes, onUpdate }: FieldProper
   }
 
   const updateValidation = (updates: Partial<FieldValidation>) => {
-    const validation = { ...localField.validation, ...updates } as FieldValidation
-    updateField({ validation })
+    const updatedValidation = { ...localField.validation, ...updates } as FieldValidation
+    updateField({ validation: updatedValidation })
   }
 
   const updateStyle = (updates: Partial<FieldStyle>) => {

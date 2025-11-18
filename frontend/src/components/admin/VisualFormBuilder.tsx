@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import { DndContext, DragOverlay, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverEvent, useDraggable } from '@dnd-kit/core'
+import { useState, useEffect, type ReactNode } from 'react'
+import { DndContext, DragOverlay, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, useDraggable } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useDroppable } from '@dnd-kit/core'
@@ -534,7 +534,7 @@ function DraggableFieldItem({ id, field }: DraggableFieldItemProps) {
 // Drop Zone Component
 interface DropZoneProps {
   stepIndex: number
-  children: React.ReactNode
+  children: ReactNode
 }
 
 function DropZone({ stepIndex, children }: DropZoneProps) {
@@ -569,7 +569,7 @@ interface SortableFieldItemProps {
 
 function SortableFieldItem({ id, field, isSelected, onClick, onDelete }: SortableFieldItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
-  const [isDraggingState, setIsDraggingState] = React.useState(false)
+  const [isDraggingState, setIsDraggingState] = useState(false)
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -581,14 +581,25 @@ function SortableFieldItem({ id, field, isSelected, onClick, onDelete }: Sortabl
     const fieldTypeInfo = FIELD_TYPES.find((f) => f.type === field.fieldType)
 
   // Handle click - only trigger onClick if not dragging
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = () => {
     if (!isDraggingState) {
       onClick()
     }
   }
 
+  // Auto-select first step if none selected
+  useEffect(() => {
+    if (selectedStep < 0 && schema.steps.length > 0) {
+      setSelectedStep(0)
+    }
+    // Reset selection when steps change
+    if (selectedStep >= schema.steps.length) {
+      setSelectedStep(Math.max(0, schema.steps.length - 1))
+    }
+  }, [schema.steps.length, selectedStep])
+
   // Track drag state
-  React.useEffect(() => {
+  useEffect(() => {
     if (isDragging) {
       setIsDraggingState(true)
     } else {
