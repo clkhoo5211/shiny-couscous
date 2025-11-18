@@ -31,7 +31,7 @@
       "@/api/*": ["./src/api/*"]
     }
   },
-  "include": ["src", "src/vite-env.d.ts"],
+  "include": ["src/**/*", "src/vite-env.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
 
