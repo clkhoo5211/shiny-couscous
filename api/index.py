@@ -2,68 +2,69 @@
 Vercel serverless function entry point for FastAPI.
 """
 import sys
-import os
-from pathlib import Path
 
-# Write to stderr for immediate visibility (Vercel shows stderr in logs)
+# Write to stderr (Vercel shows this in logs immediately)
 def log(msg):
-    print(msg, file=sys.stderr)
-    sys.stderr.flush()
+    print(msg, file=sys.stderr, flush=True)
 
 log("=" * 60)
-log("🚀 Starting Vercel Function...")
+log("🚀 STARTING VERCEL FUNCTION")
 log("=" * 60)
 
 try:
-    log("✅ Basic imports successful")
+    import os
+    from pathlib import Path
     
-    # Check directories
+    log("✅ Imports loaded")
+    
+    # Get paths
     current_dir = Path(__file__).parent.absolute()
     root_dir = current_dir.parent.absolute()
     backend_dir = root_dir / "backend"
     src_dir = backend_dir / "src"
     
-    log(f"📁 Current dir: {current_dir}")
-    log(f"📁 Root dir: {root_dir}")
-    log(f"📁 Backend dir: {backend_dir} (exists: {backend_dir.exists()})")
-    log(f"📁 Src dir: {src_dir} (exists: {src_dir.exists()})")
+    log(f"📁 Paths:")
+    log(f"   Current: {current_dir}")
+    log(f"   Root: {root_dir}")
+    log(f"   Backend: {backend_dir} (exists: {backend_dir.exists()})")
+    log(f"   Src: {src_dir} (exists: {src_dir.exists()})")
     
-    # List what's actually there
+    # Check root contents
     if root_dir.exists():
-        try:
-            contents = [p.name for p in root_dir.iterdir()][:20]
-            log(f"📂 Root contents: {contents}")
-        except Exception as e:
-            log(f"⚠️  Error listing root: {e}")
+        contents = [p.name for p in list(root_dir.iterdir())[:15]]
+        log(f"📂 Root has: {contents}")
     
-    # Add paths
+    # Add to path
     if src_dir.exists():
         sys.path.insert(0, str(src_dir))
-        log(f"✅ Added {src_dir} to path")
+        log(f"✅ Added src to path")
+    else:
+        log(f"❌ SRC DIR DOES NOT EXIST!")
+        log(f"   Backend code not included in deployment!")
     
     if backend_dir.exists():
         sys.path.insert(0, str(backend_dir))
-        log(f"✅ Added {backend_dir} to path")
+        log(f"✅ Added backend to path")
     
-    # Change directory
     if backend_dir.exists():
         os.chdir(str(backend_dir))
         log(f"✅ Changed to backend dir")
     
-    # Try import
-    log("🔄 Attempting import...")
+    log(f"📋 Python path: {sys.path[:5]}")
+    
+    # Import FastAPI app
+    log("🔄 Importing labuan_fsa.main...")
     from labuan_fsa.main import app
     log("✅ Import successful!")
-    log(f"✅ App type: {type(app)}")
+    log(f"✅ App: {type(app)}")
     
 except Exception as e:
-    log(f"❌ ERROR: {e}")
+    log(f"❌ CRITICAL ERROR: {e}")
     import traceback
-    log("❌ TRACEBACK:")
     for line in traceback.format_exc().split('\n'):
         log(f"   {line}")
     
-    # Create minimal FastAPI app
+    # Fallback app
     from fastapi import FastAPI
     app = FastAPI()
     
@@ -72,12 +73,12 @@ except Exception as e:
     async def error():
         return {
             "status": "error",
-            "message": f"Import failed: {str(e)}",
-            "error_type": type(e).__name__
+            "message": str(e),
+            "type": type(e).__name__
         }
     
-    log("⚠️  Created fallback app")
+    log("⚠️  Using fallback FastAPI app")
 
 log("=" * 60)
-log("✅ Module loaded successfully")
+log("✅ MODULE LOADED - App exported")
 log("=" * 60)
