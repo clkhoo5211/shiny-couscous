@@ -7,6 +7,7 @@ Supports both PostgreSQL (asyncpg) and SQLite (aiosqlite) for local development.
 
 from typing import AsyncGenerator
 
+import os
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -22,6 +23,10 @@ settings = get_settings()
 # Determine database type from URL
 database_url = settings.database.url
 is_sqlite = "sqlite" in database_url.lower()
+
+# Detect serverless environment (Vercel, AWS Lambda, etc.)
+# Vercel sets VERCEL=1, AWS Lambda sets AWS_LAMBDA_FUNCTION_NAME
+is_serverless = os.getenv("VERCEL") == "1" or os.getenv("AWS_LAMBDA_FUNCTION_NAME") is not None
 
 # Create async engine
 # SQLite requires NullPool and different connection parameters
@@ -45,13 +50,26 @@ if is_sqlite:
     )
 else:
     # PostgreSQL or other databases
-    engine = create_async_engine(
-        database_url,
-        echo=settings.database.echo,
-        pool_size=settings.database.pool_size,
-        max_overflow=settings.database.max_overflow,
-        pool_pre_ping=settings.database.pool_pre_ping,
-    )
+    # CRITICAL: Use NullPool for serverless environments (Vercel, Lambda)
+    # Connection pooling doesn't work in stateless serverless functions
+    # and causes "Errno 99: Cannot assign requested address" errors
+    if is_serverless:
+        print("🌐 Serverless environment detected - using NullPool for database connections")
+        engine = create_async_engine(
+            database_url,
+            echo=settings.database.echo,
+            poolclass=NullPool,  # No connection pooling in serverless
+            pool_pre_ping=False,  # Not needed with NullPool
+        )
+    else:
+        # Traditional server with connection pooling
+        engine = create_async_engine(
+            database_url,
+            echo=settings.database.echo,
+            pool_size=settings.database.pool_size,
+            max_overflow=settings.database.max_overflow,
+            pool_pre_ping=settings.database.pool_pre_ping,
+        )
 
 # Create async session factory
 AsyncSessionLocal = async_sessionmaker(
