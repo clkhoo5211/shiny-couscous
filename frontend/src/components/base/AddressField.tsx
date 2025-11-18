@@ -32,7 +32,7 @@ export interface AddressFieldProps extends BaseFieldProps {
 export function AddressField({
   fieldId,
   fieldName,
-  fieldType,
+  fieldType: _fieldType,
   label,
   value,
   defaultValue,
@@ -45,7 +45,7 @@ export function AddressField({
   hidden,
   helpText,
   tooltip,
-  validation,
+  validation: _validation,
   error,
   style,
   fields = {
@@ -56,7 +56,7 @@ export function AddressField({
     postalCode: true,
     country: false,
   },
-  className,
+  className: _className,
 }: AddressFieldProps) {
   // Get field value
   const addressValue = value ?? defaultValue ?? {

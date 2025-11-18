@@ -17,7 +17,7 @@ export interface ArrayFieldProps extends BaseFieldProps {
 export function ArrayField({
   fieldId,
   fieldName,
-  fieldType,
+  fieldType: _fieldType,
   label,
   value,
   defaultValue,
@@ -30,7 +30,7 @@ export function ArrayField({
   hidden,
   helpText,
   tooltip,
-  validation,
+  validation: _validation,
   error,
   style,
   itemSchema,
@@ -38,7 +38,7 @@ export function ArrayField({
   maxItems,
   addButtonLabel = 'Add Item',
   removeButtonLabel = 'Remove',
-  className,
+  className: _className,
 }: ArrayFieldProps) {
   // Get field value
   const arrayValue = value ?? defaultValue ?? []
@@ -132,7 +132,7 @@ export function ArrayField({
                   [`array-${fieldId}-${index}`]: { [itemSchema.fieldName]: item },
                 }}
                 errors={{}}
-                onChange={(stepId, fieldName, newValue) => handleItemChange(index, newValue)}
+                onChange={(_stepId, _fieldName, newValue) => handleItemChange(index, newValue)}
               />
             ) : (
               <input
