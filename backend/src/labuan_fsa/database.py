@@ -15,19 +15,39 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.pool import NullPool
+from sqlalchemy.engine import make_url
 
 from labuan_fsa.config import get_settings
 
 settings = get_settings()
 
 # Determine database type from URL
-database_url = settings.database.url
-is_sqlite = "sqlite" in database_url.lower()
+database_url_str = settings.database.url
+is_sqlite = "sqlite" in database_url_str.lower()
 
 # CRITICAL: If using Supabase Transaction Pooler (pgbouncer), disable prepared statements
 # pgbouncer in transaction mode doesn't support prepared statements properly
 # Check if using pooler (contains "pooler" or port 6543)
-is_pooler = "pooler" in database_url.lower() or ":6543" in database_url
+is_pooler = "pooler" in database_url_str.lower() or ":6543" in database_url_str
+
+# Parse URL and add statement_cache_size if using pooler
+if is_pooler and "postgresql" in database_url_str.lower():
+    try:
+        url = make_url(database_url_str)
+        # Add statement_cache_size=0 to query parameters
+        if url.query is None:
+            url = url.set(query={"statement_cache_size": "0"})
+        else:
+            url = url.update_query_dict({"statement_cache_size": "0"})
+        database_url_str = str(url)
+        print("⚠️  Transaction Pooler detected - disabling prepared statements (statement_cache_size=0)")
+    except Exception as e:
+        # Fallback: append as string if URL parsing fails
+        separator = "&" if "?" in database_url_str else "?"
+        database_url_str = f"{database_url_str}{separator}statement_cache_size=0"
+        print(f"⚠️  Transaction Pooler detected - added statement_cache_size=0 (URL parse warning: {e})")
+
+database_url = database_url_str
 
 # Detect serverless environment (Vercel, AWS Lambda, etc.)
 # Vercel sets VERCEL=1 or VERCEL_ENV or VERCEL_URL
