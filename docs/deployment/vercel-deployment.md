@@ -1,261 +1,179 @@
-# Deploy FastAPI Backend to Vercel
+# Vercel Setup Guide - After Importing GitHub Repo
 
-Complete guide for deploying FastAPI backend to Vercel serverless functions.
+## Step-by-Step Vercel Configuration
 
-## 🎯 Why Vercel?
+After importing your GitHub repo to Vercel, follow these steps:
 
-- ✅ **Free tier**: 100GB bandwidth, 100GB-hours serverless execution
-- ✅ **Fast**: Global CDN, edge network
-- ✅ **Easy**: Automatic deployments from GitHub
-- ✅ **Serverless**: Pay only for what you use
-- ✅ **Perfect for**: FastAPI, Python serverless functions
+## 1. Project Settings (General Tab)
 
-## 📋 Prerequisites
+### Framework Preset
+- **Current**: "Other" ✅ (Correct - don't change)
+- This is correct because we're using Python/FastAPI, not a standard framework
 
-- Vercel account: https://vercel.com
-- GitHub repository connected
-- Supabase account (for database - recommended)
+### Root Directory
+- **Should be**: `/` (root of repository) ✅
+- Leave this as default - don't change to `backend/`
 
-## 🚀 Deployment Steps
+### Build & Development Settings
+Since we're using Python serverless functions, these should be **disabled/empty**:
 
-### Step 1: Install Vercel CLI
+#### Build Command
+- **Override**: ❌ OFF (Keep default)
+- Or set to: `echo "No build needed for Python"`
+- **Why**: Python doesn't need a build step
 
-```bash
-npm install -g vercel
-```
+#### Output Directory
+- **Override**: ❌ OFF (Keep default)
+- **Why**: Not needed for serverless functions
 
-### Step 2: Login to Vercel
+#### Install Command
+- **Override**: ❌ OFF (Keep default)
+- Vercel will automatically detect `api/requirements.txt` and install dependencies
+- **Why**: Vercel auto-detects Python functions and installs from `api/requirements.txt`
 
-```bash
-vercel login
-```
+#### Development Command
+- **Override**: ❌ OFF (Keep default: "None")
+- **Why**: Not needed for serverless functions
 
-### Step 3: Configure Vercel
+## 2. Environment Variables (Settings → Environment Variables)
 
-The `backend/vercel.json` file is already configured. It tells Vercel to:
-- Use Python runtime
-- Route all requests to `src/labuan_fsa/main.py`
-- Use Python 3.11
+**CRITICAL**: Set these environment variables:
 
-### Step 4: Deploy to Vercel
-
-```bash
-cd backend
-vercel --prod
-```
-
-Follow the prompts:
-- Set up and deploy? **Yes**
-- Which scope? (Select your account)
-- Link to existing project? **No** (first time)
-- Project name: `labuan-fsa-backend` (or your choice)
-- Directory: `./` (current directory)
-- Override settings? **No**
-
-### Step 5: Connect to GitHub (Auto-Deploy)
-
-1. Go to Vercel dashboard: https://vercel.com/dashboard
-2. Select your project
-3. Go to **Settings** → **Git**
-4. Connect your GitHub repository
-5. Configure:
-   - **Repository**: `clkhoo5211/shiny-couscous`
-   - **Root Directory**: `backend`
-   - **Production Branch**: `main`
-6. Save
-
-Now Vercel will automatically deploy on every push to `main` branch!
-
-### Step 6: Set Environment Variables
-
-1. In Vercel dashboard, go to **Settings** → **Environment Variables**
-2. Add the following:
+### Required Variables:
 
 ```
-DATABASE_URL=<Supabase connection string>
-SECRET_KEY=<Generate random secret key>
-ENVIRONMENT=production
-CORS_ORIGINS=https://clkhoo5211.github.io
-PYTHON_VERSION=3.11
+DATABASE_URL=postgresql://postgres:[YOUR_PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
 ```
 
-**Generate SECRET_KEY:**
+**To get connection string:**
+1. Go to Supabase Dashboard → Database
+2. Click "Connect to your project"
+3. For Vercel/serverless: Select Method: "Transaction pooler" (recommended)
+4. For traditional servers: Select Method: "Direct connection"
+5. Copy the connection string shown
+
+```
+SECRET_KEY=[Generate a random secret key]
+```
+
+Generate it with:
 ```bash
 python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
-### Step 7: Redeploy with Environment Variables
-
-After setting environment variables, trigger a redeploy:
-
-```bash
-vercel --prod
+Or use this one (for testing):
+```
+SECRET_KEY=your-secret-key-here-minimum-32-characters-long-for-security
 ```
 
-Or in Vercel dashboard: **Deployments** → **Redeploy**
-
-## 🗄️ Database Setup (Supabase)
-
-### Step 1: Create Supabase Project
-
-1. Go to https://supabase.com
-2. **New Project**
-3. Configure:
-   - **Name**: `labuan-fsa-db`
-   - **Database Password**: (save this!)
-   - **Region**: Choose closest to you
-   - **Plan**: Free
-
-### Step 2: Get Connection String
-
-1. Go to **Settings** → **Database**
-2. Under **Connection string**, select **URI**
-3. Copy the connection string
-4. Format: `postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres`
-
-**Important**: Use the **Connection Pooling** URL (port 6543) for better performance with serverless functions.
-
-### Step 3: Run Database Migrations
-
-```bash
-# From your local machine
-cd backend
-
-# Set database URL
-export DATABASE_URL="<Supabase connection string>"
-
-# Install dependencies
-uv sync
-
-# Run migrations
-uv run alembic upgrade head
-
-# Seed mock users
-uv run python scripts/seed_mock_users.py
+```
+ENVIRONMENT=production
 ```
 
-**Alternative: Use Supabase SQL Editor**
-1. Go to Supabase dashboard → **SQL Editor**
-2. Copy SQL from `backend/alembic/versions/*.py` files
-3. Run in SQL Editor
-
-## 🔧 Vercel Configuration
-
-The `backend/vercel.json` file handles:
-- Python runtime selection
-- Request routing
-- Environment variables
-
-**File**: `backend/vercel.json`
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "src/labuan_fsa/main.py",
-      "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "src/labuan_fsa/main.py"
-    }
-  ],
-  "env": {
-    "PYTHON_VERSION": "3.11"
-  }
-}
+```
+CORS_ORIGINS=https://clkhoo5211.github.io
 ```
 
-## 📝 Requirements.txt
+### How to Add:
+1. Go to **Settings** → **Environment Variables**
+2. Click **Add New**
+3. Add each variable above
+4. **Important**: Set them for **Production**, **Preview**, and **Development** environments
+5. Click **Save**
 
-Vercel uses `requirements.txt` for dependencies. The file is already created at `backend/requirements.txt` with all necessary packages.
+## 3. Git Settings (Settings → Git)
 
-## 🌐 Access Your Backend
+Verify these settings:
 
-Once deployed, your backend will be available at:
-- **Production**: `https://labuan-fsa-backend.vercel.app`
-- **API Docs**: `https://labuan-fsa-backend.vercel.app/docs`
-- **Health Check**: `https://labuan-fsa-backend.vercel.app/health`
+- **Repository**: `clkhoo5211/shiny-couscous` ✅
+- **Production Branch**: `main` ✅
+- **Root Directory**: `/` (root) ✅
+- **Auto-deploy**: Enabled ✅
 
-## 🔄 Auto-Deployment
+## 4. Deployment Settings
 
-After connecting to GitHub:
-- Every push to `main` branch → Auto-deploy to production
-- Pull requests → Preview deployments
-- Check deployments in Vercel dashboard
+After setting environment variables:
+1. Go to **Deployments** tab
+2. Click **Redeploy** on the latest deployment (or wait for auto-deploy)
+3. Select **Use existing Build Cache** = OFF (to get fresh dependencies)
+4. Click **Redeploy**
 
-## 🐛 Troubleshooting
+## 5. Verify Deployment
 
-### Build Fails
+### Check Build Logs:
+1. Go to latest deployment
+2. Click **Build Logs** tab
+3. Look for:
+   - ✅ Installing dependencies from `api/requirements.txt`
+   - ✅ Python packages installed successfully
+   - ✅ Build completed
 
-**Error**: "Module not found"
-- Ensure all dependencies are in `requirements.txt`
-- Check Vercel build logs
+### Check Function Logs:
+1. Go to latest deployment
+2. Click **Functions** tab (or **Runtime Logs**)
+3. Look for debug output from `api/index.py`:
+   - 🔍 Vercel Entry Point Debug
+   - ✅ Added backend/src to Python path
+   - ✅ Successfully imported labuan_fsa.main
+   - ✅ Database tables created/verified successfully
 
-**Error**: "Python version mismatch"
-- Verify `PYTHON_VERSION=3.11` in environment variables
-- Check `vercel.json` configuration
+### Test Endpoints:
+Once deployed, test these URLs:
+- `https://shiny-couscous-tau.vercel.app/` → Should return API info
+- `https://shiny-couscous-tau.vercel.app/health` → Should return `{"status": "healthy"}`
+- `https://shiny-couscous-tau.vercel.app/docs` → Should show FastAPI docs
 
-### Runtime Errors
+## 6. Common Issues & Solutions
 
-**Error**: "Database connection failed"
-- Verify `DATABASE_URL` is set correctly
-- Use Supabase connection pooling URL (port 6543)
-- Check Supabase database is running
+### Issue: "Configuration Settings differ"
+**Solution**: This is normal if you have `vercel.json`. The `vercel.json` overrides project settings.
 
-**Error**: "CORS errors"
-- Verify `CORS_ORIGINS` includes `https://clkhoo5211.github.io`
-- Check backend logs in Vercel dashboard
+### Issue: Build fails with "No module named 'fastapi'"
+**Solution**: 
+- Check that `api/requirements.txt` exists
+- Verify build logs show dependency installation
+- Redeploy with cache disabled
 
-### Function Timeout
+### Issue: 500 error after deployment
+**Solution**:
+- Check Function Logs (not Build Logs)
+- Look for error messages from `api/index.py`
+- Verify environment variables are set
+- Check if `DATABASE_URL` is correct
 
-Vercel free tier has timeout limits:
-- Hobby plan: 10 seconds (serverless functions)
-- Pro plan: 60 seconds
+### Issue: "Backend directory not found"
+**Solution**:
+- Verify `vercel.json` has `functions.includeFiles: "backend/**"`
+- Check that backend code is committed to GitHub
+- Redeploy with fresh build
 
-If you hit timeouts:
-- Optimize database queries
-- Use connection pooling (Supabase)
-- Consider upgrading to Pro plan
+## 7. Verify File Structure
 
-## 📊 Vercel Free Tier Limits
+Ensure these files exist in your GitHub repo:
+```
+✅ /api/index.py
+✅ /api/requirements.txt
+✅ /backend/src/labuan_fsa/main.py
+✅ /vercel.json
+```
 
-- ✅ **Bandwidth**: 100GB/month
-- ✅ **Serverless Function Execution**: 100GB-hours/month
-- ✅ **Function Invocations**: 1M/month
-- ✅ **Build Minutes**: 6,000/month
-- ⚠️ **Function Timeout**: 10 seconds (Hobby plan)
+## 8. Test Checklist
 
-## 🔗 Update GitHub Secret
+After setup, verify:
+- [ ] Environment variables are set
+- [ ] Deployment completed successfully
+- [ ] `/health` endpoint returns `{"status": "healthy"}`
+- [ ] `/docs` shows FastAPI documentation
+- [ ] Database tables are created (check Supabase dashboard)
+- [ ] Frontend can connect to API (check browser console)
 
-After deployment, update GitHub secret:
+## Next Steps
 
-1. Go to: https://github.com/clkhoo5211/shiny-couscous/settings/secrets/actions
-2. Update `VITE_API_URL` with your Vercel URL:
-   - Example: `https://labuan-fsa-backend.vercel.app`
+1. **Set environment variables** (most important!)
+2. **Redeploy** the project
+3. **Check function logs** for any errors
+4. **Test the `/health` endpoint**
+5. **Verify tables created** in Supabase
 
-## ✅ Verification
-
-1. **Health Check**: `https://your-app.vercel.app/health`
-   - Should return: `{"status": "healthy"}`
-
-2. **API Docs**: `https://your-app.vercel.app/docs`
-   - Should show FastAPI Swagger UI
-
-3. **Test Endpoint**: `https://your-app.vercel.app/api/forms`
-   - Should return forms list (or empty array)
-
-## 🎉 Next Steps
-
-1. ✅ Backend deployed to Vercel
-2. ✅ Database connected (Supabase)
-3. ✅ Environment variables set
-4. ✅ GitHub secret updated
-5. ✅ Frontend will connect automatically
-
----
-
-**Your backend is now live on Vercel!** 🚀
+Once these are done, your Vercel API should be working!
 
