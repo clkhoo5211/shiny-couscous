@@ -599,17 +599,6 @@ function SortableFieldItem({ id, field, isSelected, onClick, onDelete }: Sortabl
     }
   }
 
-  // Auto-select first step if none selected
-  useEffect(() => {
-    if (selectedStep < 0 && schema.steps.length > 0) {
-      setSelectedStep(0)
-    }
-    // Reset selection when steps change
-    if (selectedStep >= schema.steps.length) {
-      setSelectedStep(Math.max(0, schema.steps.length - 1))
-    }
-  }, [schema.steps.length, selectedStep])
-
   // Track drag state
   useEffect(() => {
     if (isDragging) {
