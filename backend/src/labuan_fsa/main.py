@@ -75,12 +75,20 @@ elif settings.app.debug:
     # In debug mode, allow all origins for development
     cors_origins = ["*"]
 
+# Always ensure GitHub Pages is allowed (for Vercel production)
+if "https://clkhoo5211.github.io" not in cors_origins and "*" not in cors_origins:
+    cors_origins.append("https://clkhoo5211.github.io")
+
+print(f"🔧 CORS origins configured: {cors_origins}")
+print(f"🔧 Environment: {settings.app.environment}, Debug: {settings.app.debug}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,
+    allow_origins=cors_origins if "*" not in cors_origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Trusted host middleware (configure in production)
