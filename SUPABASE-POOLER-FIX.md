@@ -17,24 +17,28 @@
 
 1. Visit: https://supabase.com/dashboard
 2. Select your project
-3. Go to **Settings** → **Database**
+3. Go to **Database** section (left sidebar)
 
 ### Step 2: Find Connection Pooler
 
-Look for **"Connection Pooler"** section. You'll see:
+1. Look for **"Connect to your project"** button or modal
+2. Click it - a modal will open
+3. You'll see tabs: **"Connection String"**, **"URI"**, etc.
+4. Under the **"Connection String"** tab, look for **"Method"** dropdown
+5. In the **"Method"** dropdown, select:
+   - **"Transaction pooler"** (recommended for serverless/Vercel)
+   - **Description**: "Ideal for stateless applications like serverless functions where each interaction with Postgres is brief and isolated."
+6. After selecting "Transaction pooler", the connection string will update automatically
+7. Copy the connection string shown
 
-**Connection Pooling Mode:**
-- Transaction mode (recommended for serverless)
-- Session mode
-
-**Connection String:**
+**Connection String Format:**
 ```
-postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
+postgresql://postgres.[PROJECT-REF]:[YOUR-PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
 ```
 
-**Example:**
+**Example Format:**
 ```
-postgresql://postgres.mwvyldzcutztjenscbyr:1KJibOLhhk7e6t9D@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
+postgresql://postgres.[PROJECT-REF]:[YOUR-PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
 ```
 
 ### Step 3: Update DATABASE_URL in Vercel
@@ -57,7 +61,7 @@ postgresql://postgres.mwvyldzcutztjenscbyr:1KJibOLhhk7e6t9D@aws-0-ap-southeast-1
 
 ### Direct Connection (Current - port 5432)
 ```
-postgresql://postgres:1KJibOLhhk7e6t9D@db.mwvyldzcutztjenscbyr.supabase.co:5432/postgres
+postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
 ```
 - ❌ Can cause Errno 99 in serverless
 - ❌ Connection limits per IP
@@ -65,7 +69,7 @@ postgresql://postgres:1KJibOLhhk7e6t9D@db.mwvyldzcutztjenscbyr.supabase.co:5432/
 
 ### Connection Pooler (Recommended - port 6543)
 ```
-postgresql://postgres.mwvyldzcutztjenscbyr:1KJibOLhhk7e6t9D@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
+postgresql://postgres.[PROJECT-REF]:[YOUR-PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
 ```
 - ✅ Designed for serverless
 - ✅ Better connection management
@@ -74,11 +78,13 @@ postgresql://postgres.mwvyldzcutztjenscbyr:1KJibOLhhk7e6t9D@aws-0-ap-southeast-1
 
 ## 🔍 How to Find Your Pooler URL
 
-### Option 1: Supabase Dashboard
-1. **Settings** → **Database**
-2. Scroll to **"Connection Pooler"** section
-3. Copy the **Transaction mode** connection string
-4. Replace `[YOUR-PASSWORD]` with your actual password
+### Option 1: Supabase Dashboard (RECOMMENDED)
+1. Go to **Database** section (left sidebar)
+2. Click **"Connect to your project"** button/modal
+3. In the **"Method"** dropdown, select **"Transaction pooler"**
+4. The connection string will update automatically to use the pooler
+5. Copy the connection string shown
+6. The password should already be in the connection string (masked with dots)
 
 ### Option 2: Connection String Format
 
@@ -88,9 +94,9 @@ postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.co
 ```
 
 Where:
-- `[PROJECT-REF]` = Your Supabase project reference (e.g., `mwvyldzcutztjenscbyr`)
-- `[PASSWORD]` = Your database password
-- `[REGION]` = Your Supabase region (e.g., `ap-southeast-1`)
+- `[PROJECT-REF]` = Your Supabase project reference (get from Supabase Dashboard)
+- `[YOUR-PASSWORD]` = Your database password (get from Supabase Dashboard)
+- `[REGION]` = Your Supabase region (get from Supabase Dashboard)
 
 ## ✅ After Updating to Pooler
 
@@ -99,7 +105,7 @@ Where:
 3. ✅ Wait 2-3 minutes
 4. ✅ Check Vercel logs - should see:
    ```
-   ✅ Database URL set from environment: postgresql+asyncpg://postgres.mwvyldz...
+   ✅ Database URL set from environment: postgresql+asyncpg://postgres.[PROJECT-REF]...
    🌐 Serverless/Production environment - using NullPool
    ✅ Database connection successful
    ✅ Database tables created/verified successfully
