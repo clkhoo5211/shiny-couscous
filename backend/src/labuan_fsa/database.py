@@ -84,12 +84,27 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db() -> None:
-    """Initialize database (create all tables)."""
+    """
+    Initialize database (create all tables).
+    
+    Note: All models must be imported before calling this function
+    so that SQLAlchemy can register them with Base.metadata.
+    """
+    # Import all models to register them with Base.metadata
+    # This ensures create_all() will create tables for all models
+    # Using models.__init__ to import all models at once
+    import labuan_fsa.models  # This imports all models via __init__.py
+    
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+        print(f"✅ Database tables created/verified successfully")
+        print(f"   Tables in metadata: {list(Base.metadata.tables.keys())}")
     except Exception as e:
         # Re-raise to be handled by caller
+        import traceback
+        print(f"❌ Database initialization error: {e}")
+        traceback.print_exc()
         raise ConnectionError(f"Database connection failed: {e}") from e
 
 
