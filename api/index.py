@@ -69,7 +69,14 @@ except ImportError as e:
     
     raise
 
-# Export the FastAPI app for Vercel
+# Vercel serverless function handler
+# Vercel's Python runtime expects a handler function that receives (req, res)
+from mangum import Mangum
+
+# Wrap FastAPI app with Mangum for AWS Lambda/Vercel compatibility
+handler = Mangum(app, lifespan="off")  # Turn off lifespan since Vercel handles it differently
+
+# Export the handler for Vercel
 # This file must be named index.py and placed in api/ directory at root
-__all__ = ["app"]
+__all__ = ["handler", "app"]
 
