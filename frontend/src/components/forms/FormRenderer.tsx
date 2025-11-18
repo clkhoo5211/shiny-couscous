@@ -166,7 +166,6 @@ export function FormRenderer({
       case 'select':
       case 'select-single':
       case 'select-multi':
-      case 'select-other':
         return (
           <SelectField
             {...commonProps}
@@ -205,8 +204,6 @@ export function FormRenderer({
       case 'time':
       case 'datetime-local':
       case 'month':
-      case 'week':
-      case 'year':
         return (
           <DatePickerField
             {...commonProps}
@@ -292,7 +289,6 @@ export function FormRenderer({
         )
 
       case 'color-picker':
-      case 'color-palette':
         return (
           <ColorPickerField
             {...commonProps}
@@ -479,7 +475,6 @@ export function FormRenderer({
         )
 
       case 'segmented-control':
-      case 'button-group':
         return (
           <SegmentedControlField
             {...commonProps}
@@ -1011,7 +1006,6 @@ export function FormRenderer({
           />
         )
 
-      case 'select-other':
       case 'select-with-other':
         return (
           <SelectWithOtherField
@@ -1049,7 +1043,6 @@ export function FormRenderer({
           />
         )
 
-      case 'week':
       case 'week-picker':
         return (
           <WeekPickerField
