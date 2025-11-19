@@ -328,7 +328,7 @@ export function DocumentChecklist({
                         onBlur={onBlur}
                         onFocus={onFocus}
                         disabled={disabled}
-                        className="hidden"
+                        style={{ position: 'absolute', width: '1px', height: '1px', opacity: 0, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                       />
                     </>

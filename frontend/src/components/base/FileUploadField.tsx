@@ -210,7 +210,7 @@ export function FileUploadField({
         )}
       </label>
 
-      {/* File input (hidden) */}
+      {/* File input (visually hidden but accessible to label) */}
       <input
         ref={fileInputRef}
         id={fieldId}
@@ -218,12 +218,15 @@ export function FileUploadField({
         type="file"
         multiple={multiple}
         accept={accept.join(',')}
-        onChange={handleInputChange}
+        onChange={(e) => {
+          console.log('[FileUploadField] File input onChange triggered')
+          handleInputChange(e)
+        }}
         onBlur={onBlur}
         onFocus={onFocus}
         required={required && fileList.length === 0}
         disabled={disabled || readonly}
-        style={{ position: 'absolute', width: 0, height: 0, opacity: 0 }}
+        style={{ position: 'absolute', width: '1px', height: '1px', opacity: 0, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
         aria-invalid={!!error}
         aria-describedby={error ? `${fieldId}-error` : helpText ? `${fieldId}-help` : undefined}
       />
