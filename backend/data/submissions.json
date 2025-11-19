@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-11-19T08:19:39.944Z",
+  "lastUpdated": "2025-11-19T08:26:28.393Z",
   "items": [
     {
       "id": "SUB-20251119-808395",
@@ -1342,13 +1342,7 @@
           ]
         },
         "step-4-documents": {
-          "supportingDocuments": [
-            {
-              "fileId": "file-1763540091930-v93r85gx3",
-              "fileName": "42a99b07-1666-440a-8dc9-2ab8208c44cb.jpeg",
-              "fileSize": 273294
-            }
-          ]
+          "supportingDocuments": []
         }
       },
       "data": {
@@ -1437,17 +1431,11 @@
           ]
         },
         "step-4-documents": {
-          "supportingDocuments": [
-            {
-              "fileId": "file-1763540091930-v93r85gx3",
-              "fileName": "42a99b07-1666-440a-8dc9-2ab8208c44cb.jpeg",
-              "fileSize": 273294
-            }
-          ]
+          "supportingDocuments": []
         }
       },
       "createdAt": "2025-11-19T08:19:39.944Z",
-      "updatedAt": "2025-11-19T08:19:39.944Z"
+      "updatedAt": "2025-11-19T08:26:28.393Z"
     }
   ]
 }
