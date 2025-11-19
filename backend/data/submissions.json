@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-11-19T07:33:30.745Z",
+  "lastUpdated": "2025-11-19T07:38:23.658Z",
   "items": [
     {
       "id": "SUB-20251119-847442",
@@ -1149,6 +1149,77 @@
             "website"
           ],
           "consentDisclosure": "yes"
+        },
+        "step-2-applicant-profile": {
+          "applicantName": "Test Labuan Company Management Ltd",
+          "licenseType": [
+            "conventional"
+          ],
+          "legalEntity": "labuan-company-subsidiary",
+          "marketingOffice": "no",
+          "paidUpCapital": 100000,
+          "processingType": "normal",
+          "shareholders": [
+            {
+              "shareholderName": null,
+              "shareholderCountry": null,
+              "shareholderPercentage": null
+            }
+          ],
+          "directors": [
+            {
+              "directorName": null,
+              "directorNationality": null,
+              "directorPosition": null
+            }
+          ]
+        },
+        "step-3-business-plan": {
+          "financialProjectionCurrency": "USD",
+          "objectiveEstablishment": "<p>To establish a Labuan company management business providing comprehensive corporate services.</p>",
+          "typeProductsServices": "<p>Company incorporation, corporate secretarial services, compliance management, and corporate advisory services.</p>",
+          "businessOperationalPlan": "<p>Comprehensive plan including treasury processing services, managerial services, and corporate governance.</p>",
+          "internalPolicies": "<p>Risk management framework, compliance procedures, and internal audit mechanisms.</p>",
+          "marketingStrategy": "<p>Digital marketing, business development, and strategic partnerships.</p>",
+          "functionalStructureLabuan": "<p>CEO, CFO, Operations Manager, Compliance Officer, and support staff.</p>",
+          "functionalStructureMarketing": "<p>Projections based on market research, industry benchmarks, and conservative growth estimates.</p>",
+          "targetMarket": [
+            [
+              "Corporate Clients",
+              ""
+            ]
+          ],
+          "territorialScope": [
+            [
+              "Malaysia",
+              ""
+            ]
+          ],
+          "manpowerPlanning": [
+            [
+              "Management",
+              "",
+              "",
+              "",
+              ""
+            ]
+          ],
+          "financialProjectionIncome": [
+            [
+              "Revenue",
+              "",
+              "",
+              ""
+            ]
+          ],
+          "financialProjectionBalance": [
+            [
+              "Total Assets",
+              "",
+              "",
+              ""
+            ]
+          ]
         }
       },
       "data": {
@@ -1163,10 +1234,81 @@
             "website"
           ],
           "consentDisclosure": "yes"
+        },
+        "step-2-applicant-profile": {
+          "applicantName": "Test Labuan Company Management Ltd",
+          "licenseType": [
+            "conventional"
+          ],
+          "legalEntity": "labuan-company-subsidiary",
+          "marketingOffice": "no",
+          "paidUpCapital": 100000,
+          "processingType": "normal",
+          "shareholders": [
+            {
+              "shareholderName": null,
+              "shareholderCountry": null,
+              "shareholderPercentage": null
+            }
+          ],
+          "directors": [
+            {
+              "directorName": null,
+              "directorNationality": null,
+              "directorPosition": null
+            }
+          ]
+        },
+        "step-3-business-plan": {
+          "financialProjectionCurrency": "USD",
+          "objectiveEstablishment": "<p>To establish a Labuan company management business providing comprehensive corporate services.</p>",
+          "typeProductsServices": "<p>Company incorporation, corporate secretarial services, compliance management, and corporate advisory services.</p>",
+          "businessOperationalPlan": "<p>Comprehensive plan including treasury processing services, managerial services, and corporate governance.</p>",
+          "internalPolicies": "<p>Risk management framework, compliance procedures, and internal audit mechanisms.</p>",
+          "marketingStrategy": "<p>Digital marketing, business development, and strategic partnerships.</p>",
+          "functionalStructureLabuan": "<p>CEO, CFO, Operations Manager, Compliance Officer, and support staff.</p>",
+          "functionalStructureMarketing": "<p>Projections based on market research, industry benchmarks, and conservative growth estimates.</p>",
+          "targetMarket": [
+            [
+              "Corporate Clients",
+              ""
+            ]
+          ],
+          "territorialScope": [
+            [
+              "Malaysia",
+              ""
+            ]
+          ],
+          "manpowerPlanning": [
+            [
+              "Management",
+              "",
+              "",
+              "",
+              ""
+            ]
+          ],
+          "financialProjectionIncome": [
+            [
+              "Revenue",
+              "",
+              "",
+              ""
+            ]
+          ],
+          "financialProjectionBalance": [
+            [
+              "Total Assets",
+              "",
+              "",
+              ""
+            ]
+          ]
         }
       },
       "createdAt": "2025-11-19T07:33:30.745Z",
-      "updatedAt": "2025-11-19T07:33:30.745Z"
+      "updatedAt": "2025-11-19T07:38:23.658Z"
     }
   ]
 }
