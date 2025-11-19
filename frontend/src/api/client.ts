@@ -27,6 +27,69 @@ function generateSubmissionId(): string {
   return `SUB-${dateStr}-${random}`
 }
 
+// Cache for admin roles to avoid repeated API calls
+let adminRolesCache: { roles: Array<{ name: string; isActive: boolean }>; timestamp: number } | null = null
+const ADMIN_ROLES_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+
+/**
+ * Check if a role is an admin role by reading admin_roles.json
+ * Returns true if the role exists in admin_roles.json and is active
+ */
+async function isAdminRole(roleName: string | null | undefined): Promise<boolean> {
+  if (!roleName || roleName === 'user') {
+    return false
+  }
+
+  try {
+    // Check cache first
+    const now = Date.now()
+    if (adminRolesCache && (now - adminRolesCache.timestamp) < ADMIN_ROLES_CACHE_TTL) {
+      return adminRolesCache.roles.some((r) => r.name === roleName && r.isActive)
+    }
+
+    // Fetch from GitHub
+    const github = getGitHubClient()
+    const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; roles: Array<{ name: string; isActive: boolean }> }>(
+      'backend/data/admin_roles.json'
+    )
+
+    // Update cache
+    adminRolesCache = {
+      roles: data.roles || [],
+      timestamp: now,
+    }
+
+    // Check if role exists and is active
+    return adminRolesCache.roles.some((r) => r.name === roleName && r.isActive)
+  } catch (error) {
+    console.error('Error checking admin role:', error)
+    // Fallback: if we can't read roles, assume any non-user role is admin
+    return roleName !== 'user'
+  }
+}
+
+/**
+ * Synchronous version that uses cache (may return false if cache is empty)
+ * Use this for client-side checks where async is not possible
+ */
+function isAdminRoleSync(roleName: string | null | undefined): boolean {
+  if (!roleName || roleName === 'user') {
+    return false
+  }
+
+  // If cache exists and is valid, use it
+  if (adminRolesCache) {
+    const now = Date.now()
+    if ((now - adminRolesCache.timestamp) < ADMIN_ROLES_CACHE_TTL) {
+      return adminRolesCache.roles.some((r) => r.name === roleName && r.isActive)
+    }
+  }
+
+  // Cache miss - return false and let async version handle it
+  // This is a fallback for synchronous contexts
+  return false
+}
+
 // Helper to filter array based on params
 function filterArray<T extends { [key: string]: any }>(
   items: T[],
@@ -437,7 +500,8 @@ class APIClient {
     const submission = data.items![index]
     
     // Verify ownership (users can only update their own drafts)
-    if (submission.submittedBy !== auth.id && auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (submission.submittedBy !== auth.id && !isAdmin) {
       throw new Error('Unauthorized to update this submission')
     }
 
@@ -475,7 +539,8 @@ class APIClient {
     let submissions = data.items || []
 
     // Filter by user (non-admins only see their own)
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       submissions = submissions.filter((s) => s.submittedBy === auth.id)
     }
 
@@ -502,7 +567,8 @@ class APIClient {
     }
 
     // Verify access
-    if (submission.submittedBy !== auth.id && auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (submission.submittedBy !== auth.id && !isAdmin) {
       throw new Error('Unauthorized to view this submission')
     }
 
@@ -591,7 +657,8 @@ class APIClient {
     pageSize?: number
   }): Promise<SubmissionResponse[]> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -617,7 +684,8 @@ class APIClient {
     }
   ): Promise<SubmissionResponse> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -656,7 +724,8 @@ class APIClient {
 
   async deleteSubmission(submissionId: string): Promise<void> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -694,7 +763,8 @@ class APIClient {
     }>
   }> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -812,12 +882,13 @@ class APIClient {
     const github = getGitHubClient()
 
     // Determine which file to update
-    const authFile = auth.role === 'admin' 
+    const isAdmin = await isAdminRole(auth.role)
+    const authFile = isAdmin 
       ? 'backend/data/admins_auth.json' 
       : 'backend/data/users_auth.json'
     
     const { data: authData } = await github.readJsonFile<{ users?: any[]; admins?: any[] }>(authFile)
-    const users = auth.role === 'admin' ? authData.admins || [] : authData.users || []
+    const users = isAdmin ? authData.admins || [] : authData.users || []
     const index = users.findIndex((u: any) => u.id === auth.id)
 
     if (index === -1) {
@@ -844,7 +915,7 @@ class APIClient {
 
     users[index] = updated
 
-    if (auth.role !== 'user') {
+    if (isAdmin) {
       authData.admins = users
     } else {
       authData.users = users
@@ -880,15 +951,16 @@ class APIClient {
     }
 
     const github = getGitHubClient()
-    const authFile = auth.role !== 'user' 
+    const isAdmin = await isAdminRole(auth.role)
+    const authFile = isAdmin 
       ? 'backend/data/admins_auth.json' 
       : 'backend/data/users_auth.json'
     
     const { data: authData } = await github.readJsonFile<{ users?: any[]; admins?: any[] }>(authFile)
-    const users = auth.role !== 'user' ? authData.admins || [] : authData.users || []
+    const users = isAdmin ? authData.admins || [] : authData.users || []
     const filtered = users.filter((u: any) => u.id !== auth.id)
 
-    if (auth.role !== 'user') {
+    if (isAdmin) {
       authData.admins = filtered
     } else {
       authData.users = filtered
@@ -912,7 +984,8 @@ class APIClient {
     createdAt: string
   }>> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -938,7 +1011,8 @@ class APIClient {
     createdAt: string
   }> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -969,7 +1043,8 @@ class APIClient {
     createdAt: string
   }> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -984,17 +1059,21 @@ class APIClient {
     const newRole = data.role || oldRole
     const isRoleChange = data.role && data.role !== oldRole
 
+    // Check if roles are admin roles
+    const oldIsAdmin = await isAdminRole(oldRole)
+    const newIsAdmin = await isAdminRole(newRole)
+
     // Determine which files to use
-    const oldAuthFile = oldRole === 'user' 
-      ? 'backend/data/users_auth.json' 
-      : 'backend/data/admins_auth.json'
-    const newAuthFile = newRole === 'user'
-      ? 'backend/data/users_auth.json'
-      : 'backend/data/admins_auth.json'
+    const oldAuthFile = oldIsAdmin 
+      ? 'backend/data/admins_auth.json' 
+      : 'backend/data/users_auth.json'
+    const newAuthFile = newIsAdmin
+      ? 'backend/data/admins_auth.json'
+      : 'backend/data/users_auth.json'
 
     // Read old file
     const { data: oldAuthData, sha: oldSha } = await github.readJsonFile<{ users?: any[]; admins?: any[] }>(oldAuthFile)
-    const oldUsers = oldRole === 'user' ? oldAuthData.users || [] : oldAuthData.admins || []
+    const oldUsers = oldIsAdmin ? oldAuthData.admins || [] : oldAuthData.users || []
     const index = oldUsers.findIndex((u: any) => u.id === userId)
 
     if (index === -1) {
@@ -1018,30 +1097,30 @@ class APIClient {
     if (isRoleChange && oldAuthFile !== newAuthFile) {
       // Remove from old file
       oldUsers.splice(index, 1)
-      if (oldRole === 'user') {
-        oldAuthData.users = oldUsers
-      } else {
+      if (oldIsAdmin) {
         oldAuthData.admins = oldUsers
+      } else {
+        oldAuthData.users = oldUsers
       }
       await github.writeJsonFile(oldAuthFile, oldAuthData, `Admin update user: removed ${user.email} (role change)`, oldSha)
 
       // Add to new file
       const { data: newAuthData, sha: newSha } = await github.readJsonFile<{ users?: any[]; admins?: any[] }>(newAuthFile)
-      const newUsers = newRole === 'user' ? newAuthData.users || [] : newAuthData.admins || []
+      const newUsers = newIsAdmin ? newAuthData.admins || [] : newAuthData.users || []
       newUsers.push(updated)
-      if (newRole === 'user') {
-        newAuthData.users = newUsers
-    } else {
+      if (newIsAdmin) {
         newAuthData.admins = newUsers
+      } else {
+        newAuthData.users = newUsers
       }
       await github.writeJsonFile(newAuthFile, newAuthData, `Admin update user: added ${user.email} (role change to ${newRole})`, newSha)
     } else {
       // Update in same file
       oldUsers[index] = updated
-      if (oldRole === 'user') {
-        oldAuthData.users = oldUsers
-      } else {
+      if (oldIsAdmin) {
         oldAuthData.admins = oldUsers
+      } else {
+        oldAuthData.users = oldUsers
       }
       await github.writeJsonFile(oldAuthFile, oldAuthData, `Admin update user: ${user.email}`, oldSha)
     }
@@ -1066,7 +1145,8 @@ class APIClient {
     createdAt: string
   }>> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -1092,7 +1172,8 @@ class APIClient {
     createdAt: string
   }> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -1120,7 +1201,8 @@ class APIClient {
     createdAt: string
   }> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -1159,7 +1241,8 @@ class APIClient {
 
   async deleteAdmin(adminId: string): Promise<void> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -1186,7 +1269,8 @@ class APIClient {
     sessionTimeout: number
   }> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -1216,7 +1300,8 @@ class APIClient {
     sessionTimeout: number
   }> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -1246,7 +1331,8 @@ class APIClient {
     createdAt: string
   }>> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -1275,7 +1361,8 @@ class APIClient {
     createdAt: string
   }> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -1332,7 +1419,8 @@ class APIClient {
     createdAt: string
   }> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
@@ -1377,7 +1465,8 @@ class APIClient {
 
   async deleteAdminRole(roleId: string): Promise<void> {
     const auth = this.verifyAuth()
-    if (auth.role === 'user') {
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
       throw new Error('Admin access required')
     }
 
