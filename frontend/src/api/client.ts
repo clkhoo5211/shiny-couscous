@@ -28,7 +28,7 @@ function generateSubmissionId(): string {
 }
 
 // Import role checking utilities
-import { isAdminRole } from '@/lib/role-utils'
+import { isAdminRole, getRolePermissions } from '@/lib/role-utils'
 
 // Helper to filter array based on params
 function filterArray<T extends { [key: string]: any }>(
@@ -123,6 +123,20 @@ class APIClient {
     return payload
   }
 
+  // Helper to check if user has required permission
+  private async checkPermission(requiredPermission: string): Promise<void> {
+    const auth = this.verifyAuth()
+    const isAdmin = await isAdminRole(auth.role)
+    if (!isAdmin) {
+      throw new Error('Admin access required')
+    }
+    
+    const permissions = await getRolePermissions(auth.role)
+    if (!permissions.includes(requiredPermission)) {
+      throw new Error(`Permission denied: ${requiredPermission} required`)
+    }
+  }
+
   // Forms API
   async getForms(params?: {
     status?: string
@@ -199,7 +213,7 @@ class APIClient {
     requires_auth: boolean
     estimated_time?: string
   }): Promise<FormResponse> {
-    this.verifyAuth() // Admin only in practice
+    await this.checkPermission('manage_forms')
 
     const github = getGitHubClient()
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: FormResponse[] }>(
@@ -247,7 +261,7 @@ class APIClient {
     requires_auth: boolean
     estimated_time?: string
   }>): Promise<FormResponse> {
-    this.verifyAuth() // Admin only
+    await this.checkPermission('manage_forms')
 
     const github = getGitHubClient()
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: FormResponse[] }>(
@@ -299,7 +313,7 @@ class APIClient {
   }
 
   async deleteForm(formId: string): Promise<void> {
-    this.verifyAuth() // Admin only
+    await this.checkPermission('manage_forms')
 
     const github = getGitHubClient()
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: FormResponse[] }>(
@@ -596,11 +610,8 @@ class APIClient {
     page?: number
     pageSize?: number
   }): Promise<SubmissionResponse[]> {
+    await this.checkPermission('review_submissions')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     // Same as getSubmissions but without user filter
     const github = getGitHubClient()
@@ -623,11 +634,8 @@ class APIClient {
       requestedInfo?: string
     }
   ): Promise<SubmissionResponse> {
+    await this.checkPermission('review_submissions')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const github = getGitHubClient()
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: SubmissionResponse[] }>(
@@ -663,11 +671,8 @@ class APIClient {
   }
 
   async deleteSubmission(submissionId: string): Promise<void> {
+    await this.checkPermission('review_submissions')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const github = getGitHubClient()
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: SubmissionResponse[] }>(
@@ -702,11 +707,8 @@ class APIClient {
       timestamp: string
     }>
   }> {
+    await this.checkPermission('view_analytics')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const github = getGitHubClient()
     
@@ -923,11 +925,8 @@ class APIClient {
     isActive: boolean
     createdAt: string
   }>> {
+    await this.checkPermission('manage_users')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const github = getGitHubClient()
     const { data } = await github.readJsonFile<{ users: any[] }>('backend/data/users_auth.json')
@@ -950,11 +949,8 @@ class APIClient {
     isActive: boolean
     createdAt: string
   }> {
+    await this.checkPermission('manage_users')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const user = await getUserById(userId)
     if (!user) {
@@ -1002,6 +998,13 @@ class APIClient {
     // Check if roles are admin roles
     const oldIsAdmin = await isAdminRole(oldRole)
     const newIsAdmin = await isAdminRole(newRole)
+
+    // Check permissions: if updating admin or changing role, need manage_admins; otherwise need manage_users
+    if (oldIsAdmin || newIsAdmin || isRoleChange) {
+      await this.checkPermission('manage_admins')
+    } else {
+      await this.checkPermission('manage_users')
+    }
 
     // Determine which files to use
     const oldAuthFile = oldIsAdmin 
@@ -1084,11 +1087,8 @@ class APIClient {
     isActive: boolean
     createdAt: string
   }>> {
+    await this.checkPermission('manage_admins')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const github = getGitHubClient()
     const { data } = await github.readJsonFile<{ admins: any[] }>('backend/data/admins_auth.json')
@@ -1111,11 +1111,8 @@ class APIClient {
     isActive: boolean
     createdAt: string
   }> {
+    await this.checkPermission('manage_admins')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const user = await getUserById(adminId, 'admin')
     if (!user) {
@@ -1140,11 +1137,8 @@ class APIClient {
     isActive: boolean
     createdAt: string
   }> {
+    await this.checkPermission('manage_admins')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     // Use provided role or default to 'admin'
     const role = data.role || 'admin'
@@ -1180,11 +1174,8 @@ class APIClient {
   }
 
   async deleteAdmin(adminId: string): Promise<void> {
+    await this.checkPermission('manage_admins')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     if (auth.id === adminId) {
       throw new Error('Cannot delete your own account')
@@ -1208,11 +1199,8 @@ class APIClient {
     allowedFileTypes: string[]
     sessionTimeout: number
   }> {
+    await this.checkPermission('manage_settings')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const github = getGitHubClient()
     const { data } = await github.readJsonFile('backend/data/settings.json')
@@ -1239,11 +1227,8 @@ class APIClient {
     allowedFileTypes: string[]
     sessionTimeout: number
   }> {
+    await this.checkPermission('manage_settings')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const github = getGitHubClient()
     const { data: settings } = await github.readJsonFile('backend/data/settings.json')
@@ -1270,11 +1255,8 @@ class APIClient {
     isActive: boolean
     createdAt: string
   }>> {
+    await this.checkPermission('manage_roles')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const github = getGitHubClient()
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; roles: any[] }>(
@@ -1300,11 +1282,8 @@ class APIClient {
     isActive: boolean
     createdAt: string
   }> {
+    await this.checkPermission('manage_roles')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const github = getGitHubClient()
     const { data: rolesData, sha } = await github.readJsonFile<{ version: string; lastUpdated: string; roles: any[] }>(
@@ -1358,11 +1337,8 @@ class APIClient {
     isActive: boolean
     createdAt: string
   }> {
+    await this.checkPermission('manage_roles')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const github = getGitHubClient()
     const { data: rolesData, sha } = await github.readJsonFile<{ version: string; lastUpdated: string; roles: any[] }>(
@@ -1404,11 +1380,8 @@ class APIClient {
   }
 
   async deleteAdminRole(roleId: string): Promise<void> {
+    await this.checkPermission('manage_roles')
     const auth = this.verifyAuth()
-    const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
-      throw new Error('Admin access required')
-    }
 
     const github = getGitHubClient()
     const { data: rolesData, sha } = await github.readJsonFile<{ version: string; lastUpdated: string; roles: any[] }>(
