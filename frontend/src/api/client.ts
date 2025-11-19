@@ -173,9 +173,9 @@ class APIClient {
   }
 
   // Helper to get GitHub client (throws if not available and not using backend API)
-  private getGitHubClientOrThrow() {
+  private getGitHubClientOrThrow(): NonNullable<ReturnType<typeof getGitHubClient>> {
     if (this.useBackendAPI) {
-      return null // Will use backend API instead
+      throw new Error('This method requires GitHub API. Backend API fallback not available for this operation.')
     }
     const github = getGitHubClient()
     if (!github) {
@@ -305,7 +305,7 @@ class APIClient {
   }): Promise<FormResponse> {
     await this.checkPermission('manage_forms')
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: FormResponse[] }>(
       'backend/data/forms.json'
     )
@@ -353,7 +353,7 @@ class APIClient {
   }>): Promise<FormResponse> {
     await this.checkPermission('manage_forms')
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: FormResponse[] }>(
       'backend/data/forms.json'
     )
@@ -405,7 +405,7 @@ class APIClient {
   async deleteForm(formId: string): Promise<void> {
     await this.checkPermission('manage_forms')
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: FormResponse[] }>(
       'backend/data/forms.json'
     )
@@ -445,7 +445,7 @@ class APIClient {
     request: SubmissionCreateRequest
   ): Promise<SubmissionCreateResponse> {
     const auth = this.verifyAuth()
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
 
     // Get form to verify it exists
     await this.getForm(formId)
@@ -493,7 +493,7 @@ class APIClient {
     request: SubmissionCreateRequest
   ): Promise<SubmissionResponse> {
     const auth = this.verifyAuth()
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
 
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: SubmissionResponse[] }>(
       'backend/data/submissions.json'
@@ -530,7 +530,7 @@ class APIClient {
     request: SubmissionCreateRequest
   ): Promise<SubmissionResponse> {
     const auth = this.verifyAuth()
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
 
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: SubmissionResponse[] }>(
       'backend/data/submissions.json'
@@ -616,10 +616,7 @@ class APIClient {
       return response.data
     }
 
-    const github = getGitHubClient()
-    if (!github) {
-      throw new Error('No API client available. Please configure GitHub API or start backend server.')
-    }
+    const github = this.getGitHubClientOrThrow()
 
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: SubmissionResponse[] }>(
       'backend/data/submissions.json'
@@ -654,7 +651,7 @@ class APIClient {
       throw new Error('Files larger than 1MB are not yet supported. Please use GitHub Releases API.')
     }
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     
     // Convert file to base64
     const reader = new FileReader()
@@ -730,10 +727,7 @@ class APIClient {
     }
 
     // Same as getSubmissions but without user filter
-    const github = getGitHubClient()
-    if (!github) {
-      throw new Error('No API client available. Please configure GitHub API or start backend server.')
-    }
+    const github = this.getGitHubClientOrThrow()
     
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: SubmissionResponse[] }>(
       'backend/data/submissions.json'
@@ -757,7 +751,7 @@ class APIClient {
     await this.checkPermission('review_submissions')
     const auth = this.verifyAuth()
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: SubmissionResponse[] }>(
       'backend/data/submissions.json'
     )
@@ -794,7 +788,7 @@ class APIClient {
     await this.checkPermission('review_submissions')
     const auth = this.verifyAuth()
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: SubmissionResponse[] }>(
       'backend/data/submissions.json'
     )
@@ -836,10 +830,7 @@ class APIClient {
       return response.data
     }
 
-    const github = getGitHubClient()
-    if (!github) {
-      throw new Error('No API client available. Please configure GitHub API or start backend server.')
-    }
+    const github = this.getGitHubClientOrThrow()
     
     // Read submissions and forms
     const [submissionsData, formsData] = await Promise.all([
@@ -950,7 +941,7 @@ class APIClient {
     emailChanged?: boolean
   }> {
     const auth = this.verifyAuth()
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
 
     // Determine which file to update
     const isAdmin = await isAdminRole(auth.role)
@@ -1021,7 +1012,7 @@ class APIClient {
       throw new Error('Invalid password')
     }
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const isAdmin = await isAdminRole(auth.role)
     const authFile = isAdmin 
       ? 'backend/data/admins_auth.json' 
@@ -1057,7 +1048,7 @@ class APIClient {
     await this.checkPermission('manage_users')
     const auth = this.verifyAuth()
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data } = await github.readJsonFile<{ users: any[] }>('backend/data/users_auth.json')
 
     return (data.users || []).map((u) => ({
@@ -1113,7 +1104,7 @@ class APIClient {
       throw new Error('Admin access required')
     }
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const user = await getUserById(userId)
     if (!user) {
       throw new Error('User not found')
@@ -1219,7 +1210,7 @@ class APIClient {
     await this.checkPermission('manage_admins')
     const auth = this.verifyAuth()
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data } = await github.readJsonFile<{ admins: any[] }>('backend/data/admins_auth.json')
 
     return (data.admins || []).map((u) => ({
@@ -1312,7 +1303,7 @@ class APIClient {
       throw new Error('Cannot delete your own account')
     }
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data: authData } = await github.readJsonFile<{ admins: any[] }>('backend/data/admins_auth.json')
     
     authData.admins = (authData.admins || []).filter((u: any) => u.id !== adminId)
@@ -1333,7 +1324,7 @@ class APIClient {
     await this.checkPermission('manage_settings')
     const auth = this.verifyAuth()
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data } = await github.readJsonFile('backend/data/settings.json')
 
     return data
@@ -1361,7 +1352,7 @@ class APIClient {
     await this.checkPermission('manage_settings')
     const auth = this.verifyAuth()
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data: settings } = await github.readJsonFile('backend/data/settings.json')
 
     const updated = {
@@ -1389,7 +1380,7 @@ class APIClient {
     await this.checkPermission('manage_roles')
     const auth = this.verifyAuth()
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; roles: any[] }>(
       'backend/data/admin_roles.json'
     )
@@ -1416,7 +1407,7 @@ class APIClient {
     await this.checkPermission('manage_roles')
     const auth = this.verifyAuth()
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data: rolesData, sha } = await github.readJsonFile<{ version: string; lastUpdated: string; roles: any[] }>(
       'backend/data/admin_roles.json'
     )
@@ -1471,7 +1462,7 @@ class APIClient {
     await this.checkPermission('manage_roles')
     const auth = this.verifyAuth()
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data: rolesData, sha } = await github.readJsonFile<{ version: string; lastUpdated: string; roles: any[] }>(
       'backend/data/admin_roles.json'
     )
@@ -1514,7 +1505,7 @@ class APIClient {
     await this.checkPermission('manage_roles')
     const auth = this.verifyAuth()
 
-    const github = getGitHubClient()
+    const github = this.getGitHubClientOrThrow()
     const { data: rolesData, sha } = await github.readJsonFile<{ version: string; lastUpdated: string; roles: any[] }>(
       'backend/data/admin_roles.json'
     )

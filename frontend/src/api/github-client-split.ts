@@ -57,7 +57,7 @@ export function estimateJsonSize(data: any): number {
 export function splitDataIntoChunks<T>(data: T, basePath: string): Array<{ path: string; data: T }> {
   const chunks: Array<{ path: string; data: T }> = []
   
-  // If data is an object with an 'items' array (like forms.json structure)
+  // Handle objects with 'items' array (like forms.json, submissions.json)
   if (typeof data === 'object' && data !== null && 'items' in data && Array.isArray((data as any).items)) {
     const obj = data as any
     const items = obj.items || []
@@ -97,6 +97,98 @@ export function splitDataIntoChunks<T>(data: T, basePath: string): Array<{ path:
         data: {
           ...metadata,
           items: [],
+          chunkIndex: 0,
+          totalChunks: 1,
+        } as T,
+      })
+    }
+  }
+  // Handle objects with 'users' array (like users_auth.json)
+  else if (typeof data === 'object' && data !== null && 'users' in data && Array.isArray((data as any).users)) {
+    const obj = data as any
+    const users = obj.users || []
+    const metadata = { ...obj }
+    delete metadata.users
+    
+    // Calculate how many users per chunk
+    const sampleUser = users[0]
+    const userSize = sampleUser ? estimateJsonSize(sampleUser) : 1000
+    const usersPerChunk = Math.max(1, Math.floor(MAX_FILE_SIZE / (userSize * 1.2))) // 1.2x safety margin
+    
+    // Split users into chunks
+    for (let i = 0; i < users.length; i += usersPerChunk) {
+      const chunkUsers = users.slice(i, i + usersPerChunk)
+      const chunkIndex = Math.floor(i / usersPerChunk)
+      
+      const dir = basePath.substring(0, basePath.lastIndexOf('/'))
+      const fileName = basePath.substring(basePath.lastIndexOf('/') + 1)
+      const nameWithoutExt = fileName.replace(/\.json$/, '')
+      const chunkPath = `${dir}/${nameWithoutExt}.${chunkIndex}.json`
+      
+      chunks.push({
+        path: chunkPath,
+        data: {
+          ...metadata,
+          users: chunkUsers,
+          chunkIndex,
+          totalChunks: Math.ceil(users.length / usersPerChunk),
+        } as T,
+      })
+    }
+    
+    // If no users, still create one chunk with metadata
+    if (chunks.length === 0) {
+      chunks.push({
+        path: basePath,
+        data: {
+          ...metadata,
+          users: [],
+          chunkIndex: 0,
+          totalChunks: 1,
+        } as T,
+      })
+    }
+  }
+  // Handle objects with 'admins' array (like admins_auth.json)
+  else if (typeof data === 'object' && data !== null && 'admins' in data && Array.isArray((data as any).admins)) {
+    const obj = data as any
+    const admins = obj.admins || []
+    const metadata = { ...obj }
+    delete metadata.admins
+    
+    // Calculate how many admins per chunk
+    const sampleAdmin = admins[0]
+    const adminSize = sampleAdmin ? estimateJsonSize(sampleAdmin) : 1000
+    const adminsPerChunk = Math.max(1, Math.floor(MAX_FILE_SIZE / (adminSize * 1.2))) // 1.2x safety margin
+    
+    // Split admins into chunks
+    for (let i = 0; i < admins.length; i += adminsPerChunk) {
+      const chunkAdmins = admins.slice(i, i + adminsPerChunk)
+      const chunkIndex = Math.floor(i / adminsPerChunk)
+      
+      const dir = basePath.substring(0, basePath.lastIndexOf('/'))
+      const fileName = basePath.substring(basePath.lastIndexOf('/') + 1)
+      const nameWithoutExt = fileName.replace(/\.json$/, '')
+      const chunkPath = `${dir}/${nameWithoutExt}.${chunkIndex}.json`
+      
+      chunks.push({
+        path: chunkPath,
+        data: {
+          ...metadata,
+          admins: chunkAdmins,
+          chunkIndex,
+          totalChunks: Math.ceil(admins.length / adminsPerChunk),
+        } as T,
+      })
+    }
+    
+    // If no admins, still create one chunk with metadata
+    if (chunks.length === 0) {
+      chunks.push({
+        path: basePath,
+        data: {
+          ...metadata,
+          admins: [],
           chunkIndex: 0,
           totalChunks: 1,
         } as T,
@@ -145,7 +237,7 @@ export function mergeChunksIntoData<T>(chunks: Array<{ path: string; data: T }>)
     })
     .sort((a, b) => a.chunkIndex - b.chunkIndex)
   
-  // Merge items arrays
+  // Merge arrays from all chunks
   const firstChunk = sortedChunks[0].data as any
   const merged: any = { ...firstChunk }
   
@@ -153,13 +245,35 @@ export function mergeChunksIntoData<T>(chunks: Array<{ path: string; data: T }>)
   delete merged.chunkIndex
   delete merged.totalChunks
   
-  // Merge items from all chunks
+  // Merge 'items' arrays (for forms.json, submissions.json, etc.)
   if ('items' in merged && Array.isArray(merged.items)) {
     merged.items = []
     for (const chunk of sortedChunks) {
       const chunkData = chunk.data as any
       if (chunkData.items && Array.isArray(chunkData.items)) {
         merged.items.push(...chunkData.items)
+      }
+    }
+  }
+  
+  // Merge 'users' arrays (for users_auth.json)
+  if ('users' in merged && Array.isArray(merged.users)) {
+    merged.users = []
+    for (const chunk of sortedChunks) {
+      const chunkData = chunk.data as any
+      if (chunkData.users && Array.isArray(chunkData.users)) {
+        merged.users.push(...chunkData.users)
+      }
+    }
+  }
+  
+  // Merge 'admins' arrays (for admins_auth.json)
+  if ('admins' in merged && Array.isArray(merged.admins)) {
+    merged.admins = []
+    for (const chunk of sortedChunks) {
+      const chunkData = chunk.data as any
+      if (chunkData.admins && Array.isArray(chunkData.admins)) {
+        merged.admins.push(...chunkData.admins)
       }
     }
   }

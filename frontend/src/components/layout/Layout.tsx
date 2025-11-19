@@ -37,17 +37,17 @@ export function Layout({ children }: LayoutProps) {
         preloadAdminRoles().then(() => {
           isAdminRole(storedRole).then((isAdmin) => {
             if (isAdmin) {
-              try {
-                setUser(JSON.parse(storedUser))
-                setUserRole(storedRole)
-                setIsAuthenticated(true)
+        try {
+          setUser(JSON.parse(storedUser))
+          setUserRole(storedRole)
+          setIsAuthenticated(true)
                 // Load permissions for this role
                 getRolePermissions(storedRole).then(setUserPermissions)
-              } catch (e) {
-                console.error('Error parsing user data:', e)
-                setUser(null)
-                setUserRole(null)
-                setIsAuthenticated(false)
+        } catch (e) {
+          console.error('Error parsing user data:', e)
+          setUser(null)
+          setUserRole(null)
+          setIsAuthenticated(false)
                 setUserPermissions([])
               }
             } else {

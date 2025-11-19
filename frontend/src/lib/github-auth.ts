@@ -206,12 +206,35 @@ export async function registerUser(
     // Read appropriate auth file (any role other than 'user' goes to admins_auth.json)
     const isAdminRole = role !== 'user'
     const authFile = isAdminRole ? 'backend/data/admins_auth.json' : 'backend/data/users_auth.json'
-    let { data, sha } = await github.readJsonFile<{ users?: AuthUser[]; admins?: AuthUser[] }>(authFile)
+    
+    // Try to read the file (handles both chunked and non-chunked files)
+    // If file doesn't exist (404), initialize empty structure
+    let data: { users?: AuthUser[]; admins?: AuthUser[] }
+    let sha: string
+    
+    try {
+      const result = await github.readJsonFile<{ users?: AuthUser[]; admins?: AuthUser[] }>(authFile)
+      data = result.data
+      sha = result.sha
+    } catch (readError: any) {
+      // Handle 404 errors - file doesn't exist yet (neither main nor chunked)
+      if (readError instanceof Error && 
+          (readError.message.includes('404') || 
+           readError.message.includes('Not Found') ||
+           (readError as any).status === 404)) {
+        // Initialize empty structure for new file
+        data = isAdminRole ? { admins: [] } : { users: [] }
+        sha = '' // No SHA for new files
+      } else {
+        // Re-throw other errors
+        throw readError
+      }
+    }
 
-    // Initialize empty structure if file doesn't exist
+    // Initialize empty structure if file exists but is empty
     if (!data || Object.keys(data).length === 0) {
       data = isAdminRole ? { admins: [] } : { users: [] }
-      sha = '' // No SHA for new files
+      sha = sha || '' // Preserve SHA if it exists, otherwise empty for new files
     }
 
     // Ensure arrays exist
