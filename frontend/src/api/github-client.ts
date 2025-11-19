@@ -380,11 +380,29 @@ export class GitHubClient {
       const chunks = splitDataIntoChunks(content, path)
       
       if (chunks.length > 1) {
-        // Write all chunks
+        // First, read SHAs for all existing chunks to avoid conflicts
+        const chunkShas = await Promise.all(
+          chunks.map(async (chunk: { path: string; data: T; chunkIndex?: number }) => {
+            try {
+              const existing = await this.readSingleFile(chunk.path, false)
+              return { path: chunk.path, sha: existing.sha }
+            } catch (error) {
+              // Chunk doesn't exist yet, that's fine
+              return { path: chunk.path, sha: undefined }
+            }
+          })
+        )
+        
+        // Create a map of path to SHA
+        const shaMap = new Map<string, string | undefined>()
+        chunkShas.forEach(({ path, sha }) => shaMap.set(path, sha))
+        
+        // Write all chunks with their respective SHAs
         await Promise.all(
           chunks.map((chunk: { path: string; data: T; chunkIndex?: number }, index: number) => {
             const chunkMessage = `${message} (chunk ${(chunk.chunkIndex ?? index) + 1}/${chunks.length})`
-            return this.writeSingleFile(chunk.path, chunk.data, chunkMessage, undefined, retries)
+            const chunkSha = shaMap.get(chunk.path)
+            return this.writeSingleFile(chunk.path, chunk.data, chunkMessage, chunkSha, retries)
           })
         )
 
