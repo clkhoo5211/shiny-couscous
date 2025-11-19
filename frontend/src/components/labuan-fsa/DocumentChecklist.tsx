@@ -90,6 +90,8 @@ export function DocumentChecklist({
   onUpload,
   className,
 }: DocumentChecklistProps) {
+  console.log('[DocumentChecklist] Component rendered with fieldId:', fieldId, 'disabled:', disabled, 'readonly:', readonly)
+  
   // Get field value
   const checklistValue = value ?? defaultValue ?? {}
   
@@ -299,13 +301,18 @@ export function DocumentChecklist({
                       ) : (
                         <button
                           type="button"
+                          onMouseDown={(e) => {
+                            console.log('[DocumentChecklist] Button onMouseDown triggered for document:', document.id)
+                          }}
                           onClick={(e) => {
                             console.log('[DocumentChecklist] Upload button clicked for document:', document.id)
+                            console.log('[DocumentChecklist] Event:', e)
                             e.preventDefault()
                             e.stopPropagation()
                             const fileInput = fileInputRefs.current.get(document.id)
                             console.log('[DocumentChecklist] File input ref:', fileInput)
                             console.log('[DocumentChecklist] Disabled state:', disabled)
+                            console.log('[DocumentChecklist] All refs in map:', Array.from(fileInputRefs.current.keys()))
                             if (fileInput && !disabled) {
                               console.log('[DocumentChecklist] Attempting to click file input...')
                               try {

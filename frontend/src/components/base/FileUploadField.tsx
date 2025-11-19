@@ -43,6 +43,7 @@ export function FileUploadField({
   progress = true,
   className,
 }: FileUploadFieldProps) {
+  console.log('[FileUploadField] Component rendered with fieldId:', fieldId, 'disabled:', disabled, 'readonly:', readonly, 'dragDrop:', dragDrop)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
   const [dragActive, setDragActive] = useState(false)
@@ -253,7 +254,13 @@ export function FileUploadField({
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
-            onClick={handleClick}
+            onClick={(e) => {
+              console.log('[FileUploadField] Div onClick triggered (before handleClick)')
+              handleClick()
+            }}
+            onMouseDown={(e) => {
+              console.log('[FileUploadField] Div onMouseDown triggered')
+            }}
           >
             <div className="space-y-2">
               <div className="text-2xl sm:text-3xl lg:text-4xl">📎</div>
