@@ -130,10 +130,22 @@ export class GitHubClient {
         if (metaResponse.ok) {
           const meta: GitHubFileResponse = await metaResponse.json()
           sha = meta.sha || ''
+          if (!sha) {
+            console.error(`File exists but SHA is missing for ${path}`)
+            throw new GitHubAPIError(500, `Could not retrieve SHA for existing file: ${path}`)
+          }
+        } else {
+          // If file exists (first request succeeded) but metadata request fails, this is an error
+          console.error(`Failed to get metadata for ${path}: ${metaResponse.status} ${metaResponse.statusText}`)
+          throw new GitHubAPIError(metaResponse.status, `Could not retrieve file metadata: ${path}`)
         }
       } catch (error) {
-        // If metadata fetch fails, sha remains empty (new file)
-        console.warn(`Could not get SHA for ${path}, treating as new file`)
+        // If file exists (we got content), we MUST have SHA to update it
+        if (error instanceof GitHubAPIError) {
+          throw error
+        }
+        console.error(`Error getting SHA for ${path}:`, error)
+        throw new GitHubAPIError(500, `Failed to retrieve SHA for file: ${path}`)
       }
 
       // Update cache
