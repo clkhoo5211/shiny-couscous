@@ -161,9 +161,19 @@ class APIClient {
   // Helper to check if user has required permission
   private async checkPermission(requiredPermission: string): Promise<void> {
     const auth = this.verifyAuth()
+    
+    // Check if user is superAdmin by ID (fallback for when role is stored incorrectly)
+    const userFromStorage = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || 'null') : null
+    const isSuperAdminById = userFromStorage?.id?.toLowerCase().includes('superadmin')
+    
     const isAdmin = await isAdminRole(auth.role)
-    if (!isAdmin) {
+    if (!isAdmin && !isSuperAdminById) {
       throw new Error('Admin access required')
+    }
+    
+    // SuperAdmin has all permissions
+    if (isSuperAdminById || auth.role === 'superAdmin') {
+      return
     }
     
     const permissions = await getRolePermissions(auth.role)
