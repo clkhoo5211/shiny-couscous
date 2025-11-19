@@ -16,9 +16,9 @@
       "passwordHash": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
       "name": "usedadmin",
       "role": "test",
-      "isActive": false,
+      "isActive": true,
       "createdAt": "2025-11-19T04:38:32.924Z",
-      "updatedAt": "2025-11-19T05:09:40.948Z"
+      "updatedAt": "2025-11-19T05:09:44.988Z"
     },
     {
       "id": "superadmin-20251119-001",
