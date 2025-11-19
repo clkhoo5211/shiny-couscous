@@ -5,7 +5,7 @@
 import { getGitHubClient } from '@/api/github-client'
 
 // Cache for admin roles to avoid repeated API calls
-let adminRolesCache: { roles: Array<{ name: string; isActive: boolean }>; timestamp: number } | null = null
+let adminRolesCache: { roles: Array<{ name: string; isActive: boolean; permissions?: string[] }>; timestamp: number } | null = null
 const ADMIN_ROLES_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
 /**
@@ -26,7 +26,7 @@ export async function isAdminRole(roleName: string | null | undefined): Promise<
 
     // Fetch from GitHub
     const github = getGitHubClient()
-    const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; roles: Array<{ name: string; isActive: boolean }> }>(
+    const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; roles: Array<{ name: string; isActive: boolean; permissions?: string[] }> }>(
       'backend/data/admin_roles.json'
     )
 
