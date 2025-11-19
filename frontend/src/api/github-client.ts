@@ -243,8 +243,48 @@ export class GitHubClient {
       // GitHub API doesn't return content for files > 1MB
       // Check if content is missing or if file is too large
       if (!meta.content || meta.encoding === 'none' || (meta.size && meta.size > 1000000)) {
-        // File is too large or content not in metadata - use raw content URL
-        // Use 'main' branch (or default branch) for raw content
+        // File is too large or content not in metadata - use Git Data API to get blob
+        // This avoids CORS issues with raw.githubusercontent.com
+        const blobUrl = `${this.baseURL}/repos/${this.owner}/${this.repo}/git/blobs/${sha}`
+        const blobResponse = await fetch(blobUrl, {
+          headers: this.getHeaders(false),
+        })
+        
+        if (!blobResponse.ok) {
+          throw new GitHubAPIError(blobResponse.status, `Failed to get file blob: ${path}`)
+        }
+        
+        const blobData = await blobResponse.json()
+        
+        // Decode base64 content
+        let text: string
+        if (blobData.encoding === 'base64') {
+          text = atob(blobData.content.replace(/\s/g, ''))
+        } else {
+          text = blobData.content
+        }
+        
+        if (text.trim() === '') {
+          data = {} as T
+        } else {
+          try {
+            data = JSON.parse(text) as T
+          } catch (parseError) {
+            console.error(`Failed to parse JSON from ${path}:`, parseError)
+            throw new GitHubAPIError(422, `Invalid JSON in file: ${path}`)
+          }
+        }
+        
+        // Update cache and return
+        if (useCache) {
+          this.cache.set(path, { data, sha, timestamp: Date.now() })
+        }
+        
+        return { data, sha }
+      }
+      
+      // Fallback: try raw URL if blob API fails (shouldn't happen, but just in case)
+      if (!meta.content || meta.encoding === 'none') {
         const rawUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/main/${path}`
         const contentResponse = await fetch(rawUrl, {
           headers: this.getHeaders(true),
