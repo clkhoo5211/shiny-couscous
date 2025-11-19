@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { BaseFieldProps } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -92,6 +92,25 @@ export function DocumentChecklist({
 }: DocumentChecklistProps) {
   // Get field value
   const checklistValue = value ?? defaultValue ?? {}
+  
+  // Store refs for file inputs
+  const fileInputRefs = useRef<Map<string, HTMLInputElement>>(new Map())
+  
+  const setFileInputRef = (documentId: string, element: HTMLInputElement | null) => {
+    if (element) {
+      fileInputRefs.current.set(documentId, element)
+    } else {
+      fileInputRefs.current.delete(documentId)
+    }
+  }
+  
+  const handleUploadClick = (documentId: string, e: React.MouseEvent<HTMLLabelElement>) => {
+    e.preventDefault()
+    const fileInput = fileInputRefs.current.get(documentId)
+    if (fileInput && !disabled) {
+      fileInput.click()
+    }
+  }
 
   // Update document status
   const updateDocumentStatus = (documentId: string, uploaded: boolean, fileId?: string) => {
@@ -286,6 +305,7 @@ export function DocumentChecklist({
                       ) : (
                         <label
                           htmlFor={`${fieldId}-${document.id}`}
+                          onClick={(e) => handleUploadClick(document.id, e)}
                           className={cn(
                             'btn btn-secondary btn-sm cursor-pointer text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap',
                             disabled && 'opacity-50 cursor-not-allowed'
@@ -295,6 +315,7 @@ export function DocumentChecklist({
                         </label>
                       )}
                       <input
+                        ref={(el) => setFileInputRef(document.id, el)}
                         id={`${fieldId}-${document.id}`}
                         type="file"
                         onChange={(e) => handleFileUpload(document.id, e)}
