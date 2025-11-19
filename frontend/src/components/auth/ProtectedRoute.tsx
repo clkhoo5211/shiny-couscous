@@ -30,23 +30,34 @@ export function ProtectedRoute({
   }
   
   const isAuthenticated = !!(token && user)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null) // null = checking, true/false = determined
+  const [isChecking, setIsChecking] = useState(true)
   const isUser = userRole === 'user'
 
   // Load admin role status dynamically
   useEffect(() => {
+    setIsChecking(true)
     if (userRole && userRole !== 'user') {
       preloadAdminRoles().then(() => {
-        isAdminRole(userRole).then(setIsAdmin)
+        isAdminRole(userRole).then((result) => {
+          setIsAdmin(result)
+          setIsChecking(false)
+        })
       })
     } else {
       setIsAdmin(false)
+      setIsChecking(false)
     }
   }, [userRole])
   
   // Check if route matches user role
   const isAdminRoute = location.pathname.startsWith('/admin')
   const isUserRoute = !isAdminRoute && location.pathname !== '/login' && location.pathname !== '/register' && location.pathname !== '/forgot-password' && location.pathname !== '/admin/login'
+  
+  // Show loading state while checking role
+  if (isChecking && isAuthenticated && userRole && userRole !== 'user') {
+    return <div>Loading...</div>
+  }
   
   // If authentication is required but user is not authenticated
   if (requireAuth && !isAuthenticated) {
@@ -55,13 +66,13 @@ export function ProtectedRoute({
     return <Navigate to={loginPath} state={{ from: location }} replace />
   }
   
-  // If admin is required but user is not admin
-  if (requireAdmin && (!isAuthenticated || !isAdmin)) {
+  // If admin is required but user is not admin (only check after role check is complete)
+  if (requireAdmin && !isChecking && (!isAuthenticated || isAdmin === false)) {
     return <Navigate to="/admin/login" state={{ from: location }} replace />
   }
   
   // Prevent admin from accessing user routes
-  if (isAuthenticated && isAdmin && isUserRoute && requireAuth) {
+  if (isAuthenticated && isAdmin === true && isUserRoute && requireAuth) {
     // Admin trying to access user route - redirect to admin dashboard
     return <Navigate to="/admin" replace />
   }
@@ -72,7 +83,7 @@ export function ProtectedRoute({
     return <Navigate to="/dashboard" replace />
   }
   
-  // User is authenticated and authorized
+  // User is authenticated and authorized (or still checking)
   return <>{children}</>
 }
 
