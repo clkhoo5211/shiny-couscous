@@ -108,35 +108,43 @@ export class GitHubClient {
       return this.readSplitFile<T>(path, useCache)
     }
 
-    // Check if split files exist for this base path
-    const splitPaths = getSplitFilePaths(path, 100)
-    const existingSplitFiles: Array<{ path: string; data: T; sha: string }> = []
-    
-    // Try to read split files first (forms.0.json, forms.1.json, etc.)
-    for (const splitPath of splitPaths) {
-      try {
-        const result = await this.readSingleFile<T>(splitPath)
-        existingSplitFiles.push({ path: splitPath, ...result })
-      } catch (error) {
-        // File doesn't exist, stop checking
-        break
-      }
-    }
+    // Try to read the main file first
+    try {
+      return await this.readSingleFile<T>(path, useCache)
+    } catch (error) {
+      // If main file doesn't exist (404), check if split files exist
+      if (error instanceof GitHubAPIError && error.status === 404) {
+        // Check if split files exist for this base path
+        const splitPaths = getSplitFilePaths(path, 100)
+        const existingSplitFiles: Array<{ path: string; data: T; sha: string }> = []
+        
+        // Try to read split files (forms.0.json, forms.1.json, etc.)
+        for (const splitPath of splitPaths) {
+          try {
+            const result = await this.readSingleFile<T>(splitPath)
+            existingSplitFiles.push({ path: splitPath, ...result })
+          } catch (splitError) {
+            // File doesn't exist, stop checking
+            break
+          }
+        }
 
-    // If we found split files, merge them
-    if (existingSplitFiles.length > 0) {
-      const merged = mergeChunksIntoData<T>(existingSplitFiles.map(f => ({ path: f.path, data: f.data })))
-      const firstSha = existingSplitFiles[0].sha // Use first chunk's SHA for cache
-      
-      if (useCache) {
-        this.cache.set(path, { data: merged, sha: firstSha, timestamp: Date.now() })
+        // If we found split files, merge them
+        if (existingSplitFiles.length > 0) {
+          const merged = mergeChunksIntoData<T>(existingSplitFiles.map(f => ({ path: f.path, data: f.data })))
+          const firstSha = existingSplitFiles[0].sha // Use first chunk's SHA for cache
+          
+          if (useCache) {
+            this.cache.set(path, { data: merged, sha: firstSha, timestamp: Date.now() })
+          }
+          
+          return { data: merged, sha: firstSha }
+        }
       }
       
-      return { data: merged, sha: firstSha }
+      // Re-throw the original error if no split files found
+      throw error
     }
-
-    // No split files found, read as normal file
-    return this.readSingleFile<T>(path, useCache)
   }
 
   /**
