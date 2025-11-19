@@ -1235,7 +1235,30 @@ class APIClient {
     await this.checkPermission('manage_admins')
     const auth = this.verifyAuth()
 
+    // Use backend API if GitHub is not configured
+    if (this.useBackendAPI && this.backendClient) {
+      try {
+        const response = await this.backendClient.get('/api/admin/admins')
+        return response.data.map((u: any) => ({
+          id: u.id,
+          email: u.email,
+          name: u.name,
+          role: u.role || 'admin',
+          isActive: u.isActive !== undefined ? u.isActive : true,
+          createdAt: u.createdAt,
+        }))
+      } catch (error: any) {
+        // If backend API fails, try GitHub API as fallback
+        console.warn('Backend API failed, trying GitHub API:', error.message)
+      }
+    }
+
+    // Use GitHub API (works on GitHub Pages and localhost if configured)
     const github = this.getGitHubClientOrThrow()
+    if (!github) {
+      throw new Error('No API client available')
+    }
+    
     const { data } = await github.readJsonFile<{ admins: any[] }>('backend/data/admins_auth.json')
 
     return (data.admins || []).map((u) => ({
@@ -1405,7 +1428,23 @@ class APIClient {
     await this.checkPermission('manage_roles')
     const auth = this.verifyAuth()
 
+    // Use backend API if GitHub is not configured
+    if (this.useBackendAPI && this.backendClient) {
+      try {
+        const response = await this.backendClient.get('/api/admin/roles')
+        return response.data.roles || []
+      } catch (error: any) {
+        // If backend API fails, try GitHub API as fallback
+        console.warn('Backend API failed, trying GitHub API:', error.message)
+      }
+    }
+
+    // Use GitHub API (works on GitHub Pages and localhost if configured)
     const github = this.getGitHubClientOrThrow()
+    if (!github) {
+      throw new Error('No API client available')
+    }
+    
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; roles: any[] }>(
       'backend/data/admin_roles.json'
     )
