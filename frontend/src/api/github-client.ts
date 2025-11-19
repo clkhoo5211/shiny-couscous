@@ -108,41 +108,39 @@ export class GitHubClient {
       return this.readSplitFile<T>(path, useCache)
     }
 
-    // Try to read the main file first
+    // First, check if split files exist (they take precedence over main file)
+    // This handles the case where forms were split into chunks but main file still exists
+    const splitPaths = getSplitFilePaths(path, 100)
+    const existingSplitFiles: Array<{ path: string; data: T; sha: string }> = []
+    
+    // Try to read split files (forms.0.json, forms.1.json, etc.)
+    for (const splitPath of splitPaths) {
+      try {
+        const result = await this.readSingleFile<T>(splitPath, false) // Don't cache individual chunks
+        existingSplitFiles.push({ path: splitPath, ...result })
+      } catch (splitError) {
+        // File doesn't exist, stop checking
+        break
+      }
+    }
+
+    // If we found split files, merge them and return (split files take precedence)
+    if (existingSplitFiles.length > 0) {
+      const merged = mergeChunksIntoData<T>(existingSplitFiles.map(f => ({ path: f.path, data: f.data })))
+      const firstSha = existingSplitFiles[0].sha // Use first chunk's SHA for cache
+      
+      if (useCache) {
+        this.cache.set(path, { data: merged, sha: firstSha, timestamp: Date.now() })
+      }
+      
+      return { data: merged, sha: firstSha }
+    }
+
+    // No split files found, try to read the main file
     try {
       return await this.readSingleFile<T>(path, useCache)
     } catch (error) {
-      // If main file doesn't exist (404), check if split files exist
-      if (error instanceof GitHubAPIError && error.status === 404) {
-        // Check if split files exist for this base path
-        const splitPaths = getSplitFilePaths(path, 100)
-        const existingSplitFiles: Array<{ path: string; data: T; sha: string }> = []
-        
-        // Try to read split files (forms.0.json, forms.1.json, etc.)
-        for (const splitPath of splitPaths) {
-          try {
-            const result = await this.readSingleFile<T>(splitPath)
-            existingSplitFiles.push({ path: splitPath, ...result })
-          } catch (splitError) {
-            // File doesn't exist, stop checking
-            break
-          }
-        }
-
-        // If we found split files, merge them
-        if (existingSplitFiles.length > 0) {
-          const merged = mergeChunksIntoData<T>(existingSplitFiles.map(f => ({ path: f.path, data: f.data })))
-          const firstSha = existingSplitFiles[0].sha // Use first chunk's SHA for cache
-          
-          if (useCache) {
-            this.cache.set(path, { data: merged, sha: firstSha, timestamp: Date.now() })
-          }
-          
-          return { data: merged, sha: firstSha }
-        }
-      }
-      
-      // Re-throw the original error if no split files found
+      // Re-throw the error if main file doesn't exist
       throw error
     }
   }
