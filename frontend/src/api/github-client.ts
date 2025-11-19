@@ -426,12 +426,21 @@ export class GitHubClient {
 
     // File doesn't need splitting or is single chunk, write normally
     // But first check if old split files exist and delete them
-    const splitPaths = getSplitFilePaths(path, 100)
-    for (const splitPath of splitPaths) {
-      try {
-        await this.deleteJsonFile(splitPath, `Remove split files after consolidating into single file`)
-      } catch (error) {
-        // File doesn't exist, that's fine
+    // Only check first few split files to avoid unnecessary requests
+    // If file is new (no SHA), skip cleanup entirely
+    if (sha) {
+      // Only check first 10 split files - if they don't exist, likely no split files at all
+      const splitPaths = getSplitFilePaths(path, 10)
+      for (const splitPath of splitPaths) {
+        try {
+          // Check if file exists before trying to delete
+          await this.readSingleFile(splitPath, false)
+          // File exists, delete it
+          await this.deleteJsonFile(splitPath, `Remove split files after consolidating into single file`)
+        } catch (error) {
+          // File doesn't exist, stop checking (split files are sequential, so if one doesn't exist, later ones won't either)
+          break
+        }
       }
     }
 
@@ -515,9 +524,11 @@ export class GitHubClient {
    */
   async deleteJsonFile(path: string, message: string, retries = 3): Promise<void> {
     // Get current file SHA (required for deletion)
+    // Use readSingleFile instead of readJsonFile to avoid checking for split files
+    // when we're trying to delete a specific split file
     let sha: string
     try {
-      const current = await this.readJsonFile(path, false)
+      const current = await this.readSingleFile(path, false)
       sha = current.sha
       if (!sha) {
         throw new GitHubAPIError(404, `File not found: ${path}`)
