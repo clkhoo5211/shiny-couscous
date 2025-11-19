@@ -153,7 +153,7 @@ class APIClient {
 
   async getForm(formId: string): Promise<FormResponse> {
     const github = getGitHubClient()
-    const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: FormResponse[] }>(
+    const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: any[] }>(
       'backend/data/forms.json'
     )
 
@@ -162,19 +162,27 @@ class APIClient {
       throw new Error(`Form not found: ${formId}`)
     }
 
-    return form
+    // Return form with schemaData preserved (even though it's not in FormResponse type)
+    return form as FormResponse
   }
 
   async getFormSchema(formId: string): Promise<FormSchemaResponse> {
-    const form = await this.getForm(formId)
-    
+    const github = getGitHubClient()
+    const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: any[] }>(
+      'backend/data/forms.json'
+    )
+
+    const form = data.items?.find((f) => f.formId === formId || f.id === formId)
+    if (!form) {
+      throw new Error(`Form not found: ${formId}`)
+    }
+
     // Extract schema from form's schemaData (stored in JSON but not in type definition)
-    const formWithSchema = form as FormResponse & { schemaData?: FormSchemaResponse }
-    if (!formWithSchema.schemaData) {
+    if (!form.schemaData) {
       throw new Error(`Schema not found for form: ${formId}`)
     }
 
-    return formWithSchema.schemaData
+    return form.schemaData as FormSchemaResponse
   }
 
   async createForm(formData: {
