@@ -306,23 +306,25 @@ export function DocumentChecklist({
                           }}
                           onClick={(e) => {
                             console.log('[DocumentChecklist] Upload button clicked for document:', document.id)
-                            console.log('[DocumentChecklist] Event:', e)
-                            e.preventDefault()
-                            e.stopPropagation()
                             const fileInput = fileInputRefs.current.get(document.id)
                             console.log('[DocumentChecklist] File input ref:', fileInput)
+                            console.log('[DocumentChecklist] File input disabled attribute:', fileInput?.disabled)
                             console.log('[DocumentChecklist] Disabled state:', disabled)
-                            console.log('[DocumentChecklist] All refs in map:', Array.from(fileInputRefs.current.keys()))
-                            if (fileInput && !disabled) {
+                            
+                            if (fileInput && !disabled && !fileInput.disabled) {
                               console.log('[DocumentChecklist] Attempting to click file input...')
-                              try {
-                                fileInput.click()
-                                console.log('[DocumentChecklist] File input click() called successfully')
-                              } catch (error) {
-                                console.error('[DocumentChecklist] Error clicking file input:', error)
-                              }
+                              // Don't prevent default - let the click propagate naturally
+                              // Use setTimeout to ensure it's in the next event loop tick
+                              setTimeout(() => {
+                                try {
+                                  fileInput.click()
+                                  console.log('[DocumentChecklist] File input click() called successfully')
+                                } catch (error) {
+                                  console.error('[DocumentChecklist] Error clicking file input:', error)
+                                }
+                              }, 0)
                             } else {
-                              console.warn('[DocumentChecklist] Cannot click file input - missing ref or disabled')
+                              console.warn('[DocumentChecklist] Cannot click file input - missing ref, disabled, or fileInput.disabled')
                             }
                           }}
                           disabled={disabled}
@@ -342,7 +344,7 @@ export function DocumentChecklist({
                         onBlur={onBlur}
                         onFocus={onFocus}
                         disabled={disabled}
-                        className="hidden"
+                        style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                       />
                     </>

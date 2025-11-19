@@ -187,14 +187,19 @@ export function FileUploadField({
     console.log('[FileUploadField] Upload area clicked')
     console.log('[FileUploadField] Disabled:', disabled, 'Readonly:', readonly)
     console.log('[FileUploadField] File input ref:', fileInputRef.current)
-    if (!disabled && !readonly && fileInputRef.current) {
+    console.log('[FileUploadField] File input disabled attribute:', fileInputRef.current?.disabled)
+    
+    if (!disabled && !readonly && fileInputRef.current && !fileInputRef.current.disabled) {
       console.log('[FileUploadField] Attempting to click file input...')
-      try {
-        fileInputRef.current.click()
-        console.log('[FileUploadField] File input click() called successfully')
-      } catch (error) {
-        console.error('[FileUploadField] Error clicking file input:', error)
-      }
+      // Use setTimeout to ensure it's in the next event loop tick
+      setTimeout(() => {
+        try {
+          fileInputRef.current?.click()
+          console.log('[FileUploadField] File input click() called successfully')
+        } catch (error) {
+          console.error('[FileUploadField] Error clicking file input:', error)
+        }
+      }, 0)
     } else {
       console.warn('[FileUploadField] Cannot click file input - conditions not met')
     }
@@ -240,7 +245,7 @@ export function FileUploadField({
         onFocus={onFocus}
         required={required && fileList.length === 0}
         disabled={disabled || readonly}
-        className="hidden"
+        style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
         aria-invalid={!!error}
         aria-describedby={error ? `${fieldId}-error` : helpText ? `${fieldId}-help` : undefined}
       />
