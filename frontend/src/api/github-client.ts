@@ -120,14 +120,20 @@ export class GitHubClient {
       }
 
       // Get SHA from metadata endpoint (needed for updates)
-      const metaResponse = await fetch(url, {
-        headers: this.getHeaders(false),
-      })
-      
+      // Use the same endpoint but with JSON accept header to get metadata including SHA
       let sha = ''
-      if (metaResponse.ok) {
-        const meta: GitHubFileResponse = await metaResponse.json()
-        sha = meta.sha
+      try {
+        const metaResponse = await fetch(url, {
+          headers: this.getHeaders(false),
+        })
+        
+        if (metaResponse.ok) {
+          const meta: GitHubFileResponse = await metaResponse.json()
+          sha = meta.sha || ''
+        }
+      } catch (error) {
+        // If metadata fetch fails, sha remains empty (new file)
+        console.warn(`Could not get SHA for ${path}, treating as new file`)
       }
 
       // Update cache
@@ -179,8 +185,9 @@ export class GitHubClient {
       content: encodedContent,
     }
 
-    // Include SHA for updates (required by GitHub API)
-    if (currentSha) {
+    // Include SHA ONLY for updates (required by GitHub API)
+    // For new files, do NOT include sha field at all
+    if (currentSha && currentSha.trim() !== '') {
       body.sha = currentSha
     }
 
