@@ -44,6 +44,17 @@
       "mimeType": "application/pdf",
       "storageLocation": "github",
       "uploadedAt": "2025-11-19T02:24:16.977Z"
+    },
+    {
+      "id": "file-1763536887703-sol4zo7hc",
+      "fileId": "supportingDocuments_1763536884650_test-doc-2.pdf",
+      "fieldName": "supportingDocuments",
+      "fileName": "test-doc-2.pdf",
+      "filePath": "backend/uploads/supportingDocuments_1763536884650_test-doc-2.pdf",
+      "fileSize": 105,
+      "mimeType": "application/pdf",
+      "storageLocation": "github",
+      "uploadedAt": "2025-11-19T07:21:27.703Z"
     }
   ]
 }
