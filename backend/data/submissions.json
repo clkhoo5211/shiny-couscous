@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-11-19T07:00:22.537Z",
+  "lastUpdated": "2025-11-19T07:08:46.524Z",
   "items": [
     {
       "id": "SUB-20251119-847442",
@@ -925,7 +925,7 @@
       "status": "draft",
       "submittedBy": "user-1763535335952-ipf73ipyh",
       "createdAt": "2025-11-19T07:00:22.537Z",
-      "updatedAt": "2025-11-19T07:00:22.537Z",
+      "updatedAt": "2025-11-19T07:08:46.524Z",
       "data": {
         "step-1-general-info": {
           "partyResponsible": "applicant-shareholder",
@@ -939,6 +939,41 @@
             "business-referral"
           ],
           "consentDisclosure": "yes"
+        },
+        "step-2-applicant-profile": {
+          "applicantName": "Test Labuan Company Sdn Bhd",
+          "licenseType": [
+            "conventional"
+          ],
+          "legalEntity": "labuan-company-subsidiary",
+          "marketingOffice": "yes",
+          "paidUpCapital": 100000,
+          "processingType": "normal"
+        }
+      },
+      "submittedData": {
+        "step-1-general-info": {
+          "partyResponsible": "applicant-shareholder",
+          "officerName": "John Doe",
+          "officerCompany": "Test Company Sdn Bhd",
+          "officerDesignation": "Managing Director",
+          "officerContact": "+60123456789",
+          "officerEmail": "john.doe@testcompany.com",
+          "howKnowLabuan": [
+            "website",
+            "business-referral"
+          ],
+          "consentDisclosure": "yes"
+        },
+        "step-2-applicant-profile": {
+          "applicantName": "Test Labuan Company Sdn Bhd",
+          "licenseType": [
+            "conventional"
+          ],
+          "legalEntity": "labuan-company-subsidiary",
+          "marketingOffice": "yes",
+          "paidUpCapital": 100000,
+          "processingType": "normal"
         }
       }
     }
