@@ -183,8 +183,19 @@ export function FileUploadField({
 
   // Handle click on upload area
   const handleClick = () => {
+    console.log('[FileUploadField] Upload area clicked')
+    console.log('[FileUploadField] Disabled:', disabled, 'Readonly:', readonly)
+    console.log('[FileUploadField] File input ref:', fileInputRef.current)
     if (!disabled && !readonly && fileInputRef.current) {
-      fileInputRef.current.click()
+      console.log('[FileUploadField] Attempting to click file input...')
+      try {
+        fileInputRef.current.click()
+        console.log('[FileUploadField] File input click() called successfully')
+      } catch (error) {
+        console.error('[FileUploadField] Error clicking file input:', error)
+      }
+    } else {
+      console.warn('[FileUploadField] Cannot click file input - conditions not met')
     }
   }
 

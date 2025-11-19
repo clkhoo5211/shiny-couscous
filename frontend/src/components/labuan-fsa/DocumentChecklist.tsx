@@ -99,8 +99,10 @@ export function DocumentChecklist({
   const setFileInputRef = (documentId: string, element: HTMLInputElement | null) => {
     if (element) {
       fileInputRefs.current.set(documentId, element)
+      console.log('[DocumentChecklist] File input ref set for document:', documentId, 'Element:', element)
     } else {
       fileInputRefs.current.delete(documentId)
+      console.log('[DocumentChecklist] File input ref removed for document:', documentId)
     }
   }
 
@@ -298,11 +300,22 @@ export function DocumentChecklist({
                         <button
                           type="button"
                           onClick={(e) => {
+                            console.log('[DocumentChecklist] Upload button clicked for document:', document.id)
                             e.preventDefault()
                             e.stopPropagation()
                             const fileInput = fileInputRefs.current.get(document.id)
+                            console.log('[DocumentChecklist] File input ref:', fileInput)
+                            console.log('[DocumentChecklist] Disabled state:', disabled)
                             if (fileInput && !disabled) {
-                              fileInput.click()
+                              console.log('[DocumentChecklist] Attempting to click file input...')
+                              try {
+                                fileInput.click()
+                                console.log('[DocumentChecklist] File input click() called successfully')
+                              } catch (error) {
+                                console.error('[DocumentChecklist] Error clicking file input:', error)
+                              }
+                            } else {
+                              console.warn('[DocumentChecklist] Cannot click file input - missing ref or disabled')
                             }
                           }}
                           disabled={disabled}
