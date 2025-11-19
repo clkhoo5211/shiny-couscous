@@ -27,6 +27,15 @@
       "role": "user",
       "createdAt": "2025-11-18T12:10:27.586355Z",
       "isActive": true
+    },
+    {
+      "id": "user-1763518430250-288x1p3ly",
+      "email": "testuser-fullflow-new@example.com",
+      "passwordHash": "ffc121a2210958bf74e5a874668f3d978d24b6a8241496ccff3c0ea245e4f126",
+      "name": "Test User Full Flow",
+      "role": "user",
+      "isActive": true,
+      "createdAt": "2025-11-19T02:13:50.250Z"
     }
   ]
 }
