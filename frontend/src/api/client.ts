@@ -972,7 +972,8 @@ class APIClient {
       ? 'backend/data/admins_auth.json' 
       : 'backend/data/users_auth.json'
     
-    const { data: authData } = await github.readJsonFile<{ users?: any[]; admins?: any[] }>(authFile)
+    // Read file with SHA to ensure we can update it correctly
+    const { data: authData, sha } = await github.readJsonFile<{ users?: any[]; admins?: any[] }>(authFile)
     const users = user.role === 'admin' ? authData.admins || [] : authData.users || []
     const index = users.findIndex((u: any) => u.id === userId)
 
@@ -999,7 +1000,8 @@ class APIClient {
       authData.users = users
     }
 
-    await github.writeJsonFile(authFile, authData, `Admin update user: ${user.email}`)
+    // Pass SHA to ensure correct update
+    await github.writeJsonFile(authFile, authData, `Admin update user: ${user.email}`, sha)
 
     return {
       id: updated.id,
