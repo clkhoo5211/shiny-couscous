@@ -328,7 +328,7 @@ export function DocumentChecklist({
                         onBlur={onBlur}
                         onFocus={onFocus}
                         disabled={disabled}
-                        style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' }}
+                        style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }}
                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                       />
                     </>
