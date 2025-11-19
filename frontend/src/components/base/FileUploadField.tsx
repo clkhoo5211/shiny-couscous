@@ -210,41 +210,6 @@ export function FileUploadField({
         )}
       </label>
 
-      {/* File input (visually hidden but accessible to label) */}
-      <input
-        ref={(el) => {
-          fileInputRef.current = el
-          if (el) {
-            // Add focus event listener to verify label is working
-            el.addEventListener('focus', () => {
-              console.log('[FileUploadField] File input received focus')
-            })
-            el.addEventListener('click', () => {
-              console.log('[FileUploadField] File input clicked directly')
-            })
-          }
-        }}
-        id={fieldId}
-        name={fieldName}
-        type="file"
-        multiple={multiple}
-        accept={accept.join(',')}
-        onChange={(e) => {
-          console.log('[FileUploadField] File input onChange triggered')
-          handleInputChange(e)
-        }}
-        onBlur={onBlur}
-        onFocus={(e) => {
-          console.log('[FileUploadField] File input onFocus event')
-          if (onFocus) onFocus(e)
-        }}
-        required={required && fileList.length === 0}
-        disabled={disabled || readonly}
-        style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }}
-        aria-invalid={!!error}
-        aria-describedby={error ? `${fieldId}-error` : helpText ? `${fieldId}-help` : undefined}
-      />
-
       {/* Upload area - only show if not readonly or no files */}
       {!readonly && (fileList.length === 0 || (multiple && fileList.length < maxFiles)) && (
         dragDrop ? (
@@ -255,11 +220,55 @@ export function FileUploadField({
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
-            onClick={(e) => {
-              console.log('[FileUploadField] Label onClick triggered')
-            }}
+            style={{ position: 'relative', display: 'block' }}
           >
-            <div className="space-y-2">
+            {/* File input positioned absolutely to cover the entire label */}
+            <input
+              ref={(el) => {
+                // @ts-ignore - ref assignment is valid for useRef
+                fileInputRef.current = el
+                if (el) {
+                  el.addEventListener('focus', () => {
+                    console.log('[FileUploadField] File input received focus')
+                  })
+                  el.addEventListener('click', () => {
+                    console.log('[FileUploadField] File input clicked directly')
+                  })
+                }
+              }}
+              id={fieldId}
+              name={fieldName}
+              type="file"
+              multiple={multiple}
+              accept={accept.join(',')}
+              onChange={(e) => {
+                console.log('[FileUploadField] File input onChange triggered')
+                handleInputChange(e)
+              }}
+              onBlur={onBlur}
+              onFocus={(e) => {
+                console.log('[FileUploadField] File input onFocus event')
+                if (onFocus) {
+                  // @ts-ignore - onFocus may have different signature in BaseFieldProps
+                  onFocus(e)
+                }
+              }}
+              required={required && fileList.length === 0}
+              disabled={disabled || readonly}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                opacity: 0,
+                cursor: 'pointer',
+                zIndex: 1
+              }}
+              aria-invalid={!!error}
+              aria-describedby={error ? `${fieldId}-error` : helpText ? `${fieldId}-help` : undefined}
+            />
+            <div className="space-y-2" style={{ pointerEvents: 'none' }}>
               <div className="text-2xl sm:text-3xl lg:text-4xl">📎</div>
               <div>
                 <span className="text-primary font-medium">Click to upload</span> or drag and drop
@@ -275,11 +284,46 @@ export function FileUploadField({
           <label
             htmlFor={fieldId}
             className={cn(
-              'btn btn-secondary cursor-pointer inline-block',
+              'btn btn-secondary cursor-pointer inline-block relative',
               (disabled || readonly) && 'opacity-50 cursor-not-allowed pointer-events-none'
             )}
           >
             Choose File{multiple ? 's' : ''}
+            <input
+              ref={(el) => {
+                // @ts-ignore - ref assignment is valid for useRef
+                fileInputRef.current = el
+              }}
+              id={fieldId}
+              name={fieldName}
+              type="file"
+              multiple={multiple}
+              accept={accept.join(',')}
+              onChange={(e) => {
+                console.log('[FileUploadField] File input onChange triggered')
+                handleInputChange(e)
+              }}
+              onBlur={onBlur}
+              onFocus={(e) => {
+                console.log('[FileUploadField] File input onFocus event')
+                if (onFocus) {
+                  // @ts-ignore - onFocus may have different signature in BaseFieldProps
+                  onFocus(e)
+                }
+              }}
+              required={required && fileList.length === 0}
+              disabled={disabled || readonly}
+              style={{
+                position: 'absolute',
+                left: '-9999px',
+                width: '1px',
+                height: '1px',
+                opacity: 0,
+                overflow: 'hidden'
+              }}
+              aria-invalid={!!error}
+              aria-describedby={error ? `${fieldId}-error` : helpText ? `${fieldId}-help` : undefined}
+            />
           </label>
         )
       )}

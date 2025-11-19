@@ -260,7 +260,7 @@ export function DocumentChecklist({
                 </div>
                 
                 {/* Actions */}
-                <div className="flex items-center gap-2 sm:gap-3 sm:ml-4 flex-shrink-0 sm:flex-nowrap flex-wrap">
+                <div className="flex items-center gap-2 sm:gap-3 sm:ml-4 flex-shrink-0 sm:flex-nowrap flex-wrap" style={{ position: 'relative' }}>
                   {readonly && isUploaded && fileId ? (
                     // Readonly mode: show preview and download links
                     <>
@@ -301,50 +301,43 @@ export function DocumentChecklist({
                       ) : (
                         <label
                           htmlFor={`${fieldId}-${document.id}`}
-                          onClick={(e) => {
-                            console.log('[DocumentChecklist] Label clicked for document:', document.id)
-                            const fileInput = fileInputRefs.current.get(document.id)
-                            console.log('[DocumentChecklist] File input ref:', fileInput)
-                            if (!fileInput) {
-                              console.error('[DocumentChecklist] File input ref not found!')
-                            }
-                          }}
                           className={cn(
-                            'btn btn-secondary btn-sm cursor-pointer text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap inline-block',
+                            'btn btn-secondary btn-sm cursor-pointer text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap inline-block relative',
                             disabled && 'opacity-50 cursor-not-allowed pointer-events-none'
                           )}
                         >
                           Upload
+                          <input
+                            ref={(el) => {
+                              setFileInputRef(document.id, el)
+                            }}
+                            id={`${fieldId}-${document.id}`}
+                            type="file"
+                            onChange={(e) => {
+                              console.log('[DocumentChecklist] File input onChange triggered for document:', document.id)
+                              handleFileUpload(document.id, e)
+                            }}
+                            onBlur={onBlur}
+                            onFocus={(e) => {
+                              console.log('[DocumentChecklist] File input onFocus event for document:', document.id)
+                              if (onFocus) {
+                                // @ts-ignore - onFocus may have different signature in BaseFieldProps
+                                onFocus(e)
+                              }
+                            }}
+                            disabled={disabled}
+                            style={{
+                              position: 'absolute',
+                              left: '-9999px',
+                              width: '1px',
+                              height: '1px',
+                              opacity: 0,
+                              overflow: 'hidden'
+                            }}
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                          />
                         </label>
                       )}
-                      <input
-                        ref={(el) => {
-                          setFileInputRef(document.id, el)
-                          if (el) {
-                            // Add focus event listener to verify label is working
-                            el.addEventListener('focus', () => {
-                              console.log('[DocumentChecklist] File input received focus for document:', document.id)
-                            })
-                            el.addEventListener('click', () => {
-                              console.log('[DocumentChecklist] File input clicked directly for document:', document.id)
-                            })
-                          }
-                        }}
-                        id={`${fieldId}-${document.id}`}
-                        type="file"
-                        onChange={(e) => {
-                          console.log('[DocumentChecklist] File input onChange triggered for document:', document.id)
-                          handleFileUpload(document.id, e)
-                        }}
-                        onBlur={onBlur}
-                        onFocus={(e) => {
-                          console.log('[DocumentChecklist] File input onFocus event for document:', document.id)
-                          if (onFocus) onFocus(e)
-                        }}
-                        disabled={disabled}
-                        style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }}
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                      />
                     </>
                   ) : null}
                 </div>
