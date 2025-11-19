@@ -299,54 +299,36 @@ export function DocumentChecklist({
                           Remove
                         </button>
                       ) : (
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            console.log('[DocumentChecklist] Button onMouseDown triggered for document:', document.id)
-                          }}
+                        <label
+                          htmlFor={`${fieldId}-${document.id}`}
                           onClick={(e) => {
-                            console.log('[DocumentChecklist] Upload button clicked for document:', document.id)
+                            console.log('[DocumentChecklist] Label clicked for document:', document.id)
                             const fileInput = fileInputRefs.current.get(document.id)
                             console.log('[DocumentChecklist] File input ref:', fileInput)
-                            console.log('[DocumentChecklist] File input disabled attribute:', fileInput?.disabled)
-                            console.log('[DocumentChecklist] Disabled state:', disabled)
-                            
-                            if (fileInput && !disabled && !fileInput.disabled) {
-                              console.log('[DocumentChecklist] Attempting to click file input...')
-                              // Click must happen synchronously within user interaction event
-                              try {
-                                // Ensure file input is in the DOM and accessible
-                                if (fileInput.isConnected) {
-                                  fileInput.click()
-                                  console.log('[DocumentChecklist] File input click() called successfully')
-                                } else {
-                                  console.error('[DocumentChecklist] File input is not connected to DOM')
-                                }
-                              } catch (error) {
-                                console.error('[DocumentChecklist] Error clicking file input:', error)
-                              }
-                            } else {
-                              console.warn('[DocumentChecklist] Cannot click file input - missing ref, disabled, or fileInput.disabled')
+                            if (!fileInput) {
+                              console.error('[DocumentChecklist] File input ref not found!')
                             }
                           }}
-                          disabled={disabled}
                           className={cn(
-                            'btn btn-secondary btn-sm cursor-pointer text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap',
-                            disabled && 'opacity-50 cursor-not-allowed'
+                            'btn btn-secondary btn-sm cursor-pointer text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 whitespace-nowrap inline-block',
+                            disabled && 'opacity-50 cursor-not-allowed pointer-events-none'
                           )}
                         >
                           Upload
-                        </button>
+                        </label>
                       )}
                       <input
                         ref={(el) => setFileInputRef(document.id, el)}
                         id={`${fieldId}-${document.id}`}
                         type="file"
-                        onChange={(e) => handleFileUpload(document.id, e)}
+                        onChange={(e) => {
+                          console.log('[DocumentChecklist] File input onChange triggered for document:', document.id)
+                          handleFileUpload(document.id, e)
+                        }}
                         onBlur={onBlur}
                         onFocus={onFocus}
                         disabled={disabled}
-                        style={{ position: 'absolute', width: 0, height: 0, opacity: 0 }}
+                        className="hidden"
                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                       />
                     </>
