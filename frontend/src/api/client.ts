@@ -948,7 +948,7 @@ class APIClient {
 
   async updateAdminUser(
     userId: string,
-    data: { name?: string; email?: string; is_active?: boolean; password?: string }
+    data: { name?: string; email?: string; role?: string; is_active?: boolean; password?: string }
   ): Promise<{
     id: string
     email: string
@@ -968,23 +968,34 @@ class APIClient {
       throw new Error('User not found')
     }
 
-    const authFile = user.role === 'admin' 
-      ? 'backend/data/admins_auth.json' 
-      : 'backend/data/users_auth.json'
-    
-    // Read file with SHA to ensure we can update it correctly
-    const { data: authData, sha } = await github.readJsonFile<{ users?: any[]; admins?: any[] }>(authFile)
-    const users = user.role === 'admin' ? authData.admins || [] : authData.users || []
-    const index = users.findIndex((u: any) => u.id === userId)
+    // Determine old and new roles
+    const oldRole = user.role
+    const newRole = data.role || oldRole
+    const isRoleChange = data.role && data.role !== oldRole
+
+    // Determine which files to use
+    const oldAuthFile = oldRole === 'user' 
+      ? 'backend/data/users_auth.json' 
+      : 'backend/data/admins_auth.json'
+    const newAuthFile = newRole === 'user'
+      ? 'backend/data/users_auth.json'
+      : 'backend/data/admins_auth.json'
+
+    // Read old file
+    const { data: oldAuthData, sha: oldSha } = await github.readJsonFile<{ users?: any[]; admins?: any[] }>(oldAuthFile)
+    const oldUsers = oldRole === 'user' ? oldAuthData.users || [] : oldAuthData.admins || []
+    const index = oldUsers.findIndex((u: any) => u.id === userId)
 
     if (index === -1) {
       throw new Error('User not found')
     }
 
+    // Build updated user object
     const updated = {
-      ...users[index],
+      ...oldUsers[index],
       ...(data.name && { name: data.name }),
       ...(data.email && { email: data.email.toLowerCase() }),
+      ...(data.role && { role: data.role }),
       ...(data.is_active !== undefined && { isActive: data.is_active }),
       ...(data.password && { 
         passwordHash: CryptoJS.SHA256(data.password).toString() 
@@ -992,16 +1003,37 @@ class APIClient {
       updatedAt: new Date().toISOString(),
     }
 
-    users[index] = updated
+    // If role changed, move user between files
+    if (isRoleChange && oldAuthFile !== newAuthFile) {
+      // Remove from old file
+      oldUsers.splice(index, 1)
+      if (oldRole === 'user') {
+        oldAuthData.users = oldUsers
+      } else {
+        oldAuthData.admins = oldUsers
+      }
+      await github.writeJsonFile(oldAuthFile, oldAuthData, `Admin update user: removed ${user.email} (role change)`, oldSha)
 
-    if (user.role === 'admin') {
-      authData.admins = users
+      // Add to new file
+      const { data: newAuthData, sha: newSha } = await github.readJsonFile<{ users?: any[]; admins?: any[] }>(newAuthFile)
+      const newUsers = newRole === 'user' ? newAuthData.users || [] : newAuthData.admins || []
+      newUsers.push(updated)
+      if (newRole === 'user') {
+        newAuthData.users = newUsers
+      } else {
+        newAuthData.admins = newUsers
+      }
+      await github.writeJsonFile(newAuthFile, newAuthData, `Admin update user: added ${user.email} (role change to ${newRole})`, newSha)
     } else {
-      authData.users = users
+      // Update in same file
+      oldUsers[index] = updated
+      if (oldRole === 'user') {
+        oldAuthData.users = oldUsers
+      } else {
+        oldAuthData.admins = oldUsers
+      }
+      await github.writeJsonFile(oldAuthFile, oldAuthData, `Admin update user: ${user.email}`, oldSha)
     }
-
-    // Pass SHA to ensure correct update
-    await github.writeJsonFile(authFile, authData, `Admin update user: ${user.email}`, sha)
 
     return {
       id: updated.id,
@@ -1102,7 +1134,7 @@ class APIClient {
 
   async updateAdminAdmin(
     adminId: string,
-    data: { name?: string; email?: string; is_active?: boolean; password?: string }
+    data: { name?: string; email?: string; role?: string; is_active?: boolean; password?: string }
   ): Promise<{
     id: string
     email: string

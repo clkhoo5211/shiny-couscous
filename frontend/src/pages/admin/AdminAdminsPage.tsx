@@ -21,7 +21,7 @@ export function AdminAdminsPage() {
   const { showConfirm } = useConfirmDialog()
   const queryClient = useQueryClient()
   const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null)
-  const [editForm, setEditForm] = useState({ name: '', email: '', isActive: true, password: '' })
+  const [editForm, setEditForm] = useState({ name: '', email: '', role: '', isActive: true, password: '' })
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [createForm, setCreateForm] = useState({ name: '', email: '', password: '', role: 'admin' })
   const [showPasswordField, setShowPasswordField] = useState(false)
@@ -67,10 +67,11 @@ export function AdminAdminsPage() {
 
   // Update admin mutation
   const updateMutation = useMutation({
-    mutationFn: ({ adminId, data }: { adminId: string; data: { name?: string; email?: string; is_active?: boolean; password?: string } }) => {
-      const apiData: { name?: string; email?: string; is_active?: boolean; password?: string } = {}
+    mutationFn: ({ adminId, data }: { adminId: string; data: { name?: string; email?: string; role?: string; is_active?: boolean; password?: string } }) => {
+      const apiData: { name?: string; email?: string; role?: string; is_active?: boolean; password?: string } = {}
       if (data.name !== undefined) apiData.name = data.name
       if (data.email !== undefined) apiData.email = data.email
+      if (data.role !== undefined) apiData.role = data.role
       if (data.is_active !== undefined) apiData.is_active = data.is_active
       if (data.password !== undefined && data.password !== '') apiData.password = data.password
       return apiClient.updateAdminAdmin(adminId, apiData)
@@ -108,6 +109,7 @@ export function AdminAdminsPage() {
     setEditForm({
       name: admin.name,
       email: admin.email,
+      role: admin.role,
       isActive: admin.isActive,
       password: '',
     })
@@ -124,12 +126,13 @@ export function AdminAdminsPage() {
     }
 
     // Non-superAdmin can only change password and email for their own account
-    const updateData: { name?: string; email?: string; is_active?: boolean; password?: string } = {}
+    const updateData: { name?: string; email?: string; role?: string; is_active?: boolean; password?: string } = {}
     
     if (isSuperAdmin) {
-      // superAdmin can edit everything
+      // superAdmin can edit everything including role
       updateData.name = editForm.name
       updateData.email = editForm.email
+      updateData.role = editForm.role
       updateData.is_active = editForm.isActive
       if (showPasswordField && editForm.password) {
         updateData.password = editForm.password
@@ -154,7 +157,7 @@ export function AdminAdminsPage() {
 
   const handleCancel = () => {
     setEditingAdmin(null)
-    setEditForm({ name: '', email: '', isActive: true, password: '' })
+    setEditForm({ name: '', email: '', role: '', isActive: true, password: '' })
     setShowPasswordField(false)
   }
 
@@ -379,9 +382,25 @@ export function AdminAdminsPage() {
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                            {admin.role}
-                          </span>
+                          {isSuperAdmin ? (
+                            <select
+                              value={editForm.role}
+                              onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                              className="input w-full text-sm"
+                            >
+                              {roles
+                                .filter((role) => role.isActive)
+                                .map((role) => (
+                                  <option key={role.id} value={role.name}>
+                                    {role.displayName}
+                                  </option>
+                                ))}
+                            </select>
+                          ) : (
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                              {admin.role}
+                            </span>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <label className="flex items-center">
