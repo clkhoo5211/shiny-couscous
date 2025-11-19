@@ -67,15 +67,21 @@ pip install uv
 
 ### Quick Start - Run Both Servers
 
-**Option 1: Start Both Servers at Once (Recommended)**
+**Option 1: Start Both Servers at Once with Auto-Sync (Recommended)**
 
 ```bash
-# Make script executable (first time only)
+# Make scripts executable (first time only)
 chmod +x scripts/start-servers.sh
+chmod +x scripts/sync-github-data.sh
 
-# Start both backend and frontend
+# Set GitHub token for data syncing (optional, but recommended)
+export GITHUB_TOKEN=your_github_token_here
+
+# Start both backend and frontend (auto-syncs data from GitHub)
 ./scripts/start-servers.sh
 ```
+
+**Note:** The script automatically syncs latest JSON data from GitHub before starting. To skip syncing, use: `SKIP_SYNC=1 ./scripts/start-servers.sh`
 
 **Option 2: Start Servers Separately**
 
@@ -123,12 +129,18 @@ python3 -m uvicorn labuan_fsa.main:app --host 127.0.0.1 --port 8000 --reload
 ```bash
 cd frontend
 
+# Set up environment variables (first time only)
+cp .env.local.example .env.local
+# Edit .env.local with your GitHub token and JWT secret
+
 # Install dependencies (first time only)
 npm install
 
 # Run development server
 npm run dev
 ```
+
+**Important:** The frontend requires GitHub API configuration. See [Local Development Setup](./docs/development/LOCAL_DEVELOPMENT_SETUP.md) for details.
 
 ### Access URLs
 

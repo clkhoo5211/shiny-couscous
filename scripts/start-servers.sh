@@ -8,6 +8,18 @@ echo "🚀 Starting Labuan FSA E-Submission System"
 echo "=========================================="
 echo ""
 
+# Sync JSON data from GitHub (optional, can be skipped with SKIP_SYNC=1)
+if [ "${SKIP_SYNC:-0}" != "1" ]; then
+    echo "🔄 Syncing latest JSON data from GitHub..."
+    if [ -f "$PROJECT_ROOT/scripts/sync-github-data.sh" ]; then
+        bash "$PROJECT_ROOT/scripts/sync-github-data.sh"
+        echo ""
+    else
+        echo "   ⚠️  sync-github-data.sh not found, skipping data sync"
+        echo ""
+    fi
+fi
+
 # Check prerequisites
 command -v python3 >/dev/null 2>&1 || { echo "❌ Python 3 not found. Please install Python 3.11+"; exit 1; }
 command -v uv >/dev/null 2>&1 || { echo "❌ uv not found. Please install uv: curl -LsSf https://astral.sh/uv/install.sh | sh"; exit 1; }

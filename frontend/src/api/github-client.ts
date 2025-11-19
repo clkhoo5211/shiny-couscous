@@ -405,25 +405,31 @@ export class GitHubClient {
 }
 
 /**
- * Create GitHub client instance
+ * Check if GitHub API is configured
  */
-export function createGitHubClient(): GitHubClient {
+export function isGitHubConfigured(): boolean {
+  const owner = import.meta.env.VITE_GITHUB_OWNER || ''
+  const repo = import.meta.env.VITE_GITHUB_REPO || ''
+  const token = import.meta.env.VITE_GITHUB_TOKEN || ''
+  return !!(owner && repo && token)
+}
+
+/**
+ * Create GitHub client instance
+ * Returns null if not configured (for local development mode)
+ */
+export function createGitHubClient(): GitHubClient | null {
   const owner = import.meta.env.VITE_GITHUB_OWNER || ''
   const repo = import.meta.env.VITE_GITHUB_REPO || ''
   const token = import.meta.env.VITE_GITHUB_TOKEN || ''
 
-  // Better error message with details about what's missing
-  const missing: string[] = []
-  if (!owner) missing.push('VITE_GITHUB_OWNER')
-  if (!repo) missing.push('VITE_GITHUB_REPO')
-  if (!token) missing.push('VITE_GITHUB_TOKEN')
-
-  if (missing.length > 0) {
-    const errorMsg = `GitHub configuration missing: ${missing.join(', ')}. ` +
-      `Please ensure these environment variables are set in your GitHub Actions workflow. ` +
-      `Current values: OWNER=${owner ? '***' : 'MISSING'}, REPO=${repo ? '***' : 'MISSING'}, TOKEN=${token ? '***' : 'MISSING'}`
-    console.error('[GitHub Client]', errorMsg)
-    throw new Error(errorMsg)
+  // If not configured, return null (will use local backend API instead)
+  if (!owner || !repo || !token) {
+    if (import.meta.env.DEV) {
+      console.warn('[GitHub Client] GitHub API not configured. Using local backend API mode.')
+      console.warn('[GitHub Client] To use GitHub API, set: VITE_GITHUB_OWNER, VITE_GITHUB_REPO, VITE_GITHUB_TOKEN')
+    }
+    return null
   }
 
   return new GitHubClient(owner, repo, token)
@@ -434,9 +440,10 @@ let githubClientInstance: GitHubClient | null = null
 
 /**
  * Get or create GitHub client singleton
+ * Returns null if GitHub is not configured (for local development)
  */
-export function getGitHubClient(): GitHubClient {
-  if (!githubClientInstance) {
+export function getGitHubClient(): GitHubClient | null {
+  if (githubClientInstance === null && isGitHubConfigured()) {
     githubClientInstance = createGitHubClient()
   }
   return githubClientInstance
