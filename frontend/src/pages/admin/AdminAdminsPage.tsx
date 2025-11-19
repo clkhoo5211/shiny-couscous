@@ -5,6 +5,7 @@ import apiClient from '@/api/client'
 import { useToast } from '@/components/ui/ToastProvider'
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { cn } from '@/lib/utils'
+import { getRolePermissions } from '@/lib/role-utils'
 
 interface Admin {
   id: string
@@ -25,7 +26,7 @@ export function AdminAdminsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [createForm, setCreateForm] = useState({ name: '', email: '', password: '', role: 'admin' })
   const [showPasswordField, setShowPasswordField] = useState(false)
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false)
+  const [canManageAdmins, setCanManageAdmins] = useState(false)
 
   // Get current admin info
   const currentAdminStr = localStorage.getItem('user')
@@ -33,9 +34,17 @@ export function AdminAdminsPage() {
   const currentAdminId = currentAdmin?.id || null
   const currentAdminRole = localStorage.getItem('userRole') || 'admin'
 
-  // Check if current admin is superAdmin
+  // Check if current admin has manage_admins permission (superAdmin or any role with this permission)
   useEffect(() => {
-    setIsSuperAdmin(currentAdminRole === 'superAdmin')
+    const checkPermissions = async () => {
+      if (currentAdminRole && currentAdminRole !== 'user') {
+        const permissions = await getRolePermissions(currentAdminRole)
+        setCanManageAdmins(permissions.includes('manage_admins'))
+      } else {
+        setCanManageAdmins(false)
+      }
+    }
+    checkPermissions()
   }, [currentAdminRole])
 
   // Fetch admins
@@ -99,9 +108,9 @@ export function AdminAdminsPage() {
   })
 
   const handleEdit = (admin: Admin) => {
-    // Check permissions: non-superAdmin can only edit their own account
-    if (!isSuperAdmin && admin.id !== currentAdminId) {
-      showError('You can only edit your own account. Only superAdmin can edit other admins.', 'Permission Denied')
+    // Check permissions: users without manage_admins permission can only edit their own account
+    if (!canManageAdmins && admin.id !== currentAdminId) {
+      showError('You can only edit your own account. Only users with manage_admins permission can edit other admins.', 'Permission Denied')
       return
     }
     
@@ -119,22 +128,26 @@ export function AdminAdminsPage() {
   const handleSave = () => {
     if (!editingAdmin) return
 
-    // Check permissions: non-superAdmin can only edit their own account
-    if (!isSuperAdmin && editingAdmin.id !== currentAdminId) {
-      showError('You can only edit your own account. Only superAdmin can edit other admins.', 'Permission Denied')
+    // Check permissions: users without manage_admins permission can only edit their own account
+    if (!canManageAdmins && editingAdmin.id !== currentAdminId) {
+      showError('You can only edit your own account. Only users with manage_admins permission can edit other admins.', 'Permission Denied')
       return
     }
 
-    // Non-superAdmin can only change password and email for their own account
+    // Users without manage_admins permission can only change password and email for their own account
     const updateData: { name?: string; email?: string; role?: string; is_active?: boolean; password?: string } = {}
     
-    if (isSuperAdmin) {
-      // superAdmin can edit everything including role
+    if (canManageAdmins) {
+      // Users with manage_admins permission can edit everything including role and password
       updateData.name = editForm.name
       updateData.email = editForm.email
       updateData.role = editForm.role
       updateData.is_active = editForm.isActive
       if (showPasswordField && editForm.password) {
+        if (editForm.password.length < 6) {
+          showError('Password must be at least 6 characters long', 'Validation Error')
+          return
+        }
         updateData.password = editForm.password
       }
     } else {
@@ -232,12 +245,14 @@ export function AdminAdminsPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Management</h1>
           <p className="text-gray-600">Manage admin accounts and privileges</p>
         </div>
-          <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="btn btn-primary"
-          >
-            + Create New Admin
-          </button>
+          {canManageAdmins && (
+            <button
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className="btn btn-primary"
+            >
+              + Create New Admin
+            </button>
+          )}
       </div>
 
       {/* Create Admin Form */}
@@ -369,7 +384,7 @@ export function AdminAdminsPage() {
                             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                             className="input w-full"
                             placeholder="Name"
-                            disabled={!isSuperAdmin}
+                            disabled={!canManageAdmins}
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -382,7 +397,7 @@ export function AdminAdminsPage() {
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {isSuperAdmin ? (
+                          {canManageAdmins ? (
                             <select
                               value={editForm.role}
                               onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
@@ -409,7 +424,7 @@ export function AdminAdminsPage() {
                               checked={editForm.isActive}
                               onChange={(e) => setEditForm({ ...editForm, isActive: e.target.checked })}
                               className="rounded border-gray-300 text-primary focus:ring-primary"
-                              disabled={!isSuperAdmin}
+                              disabled={!canManageAdmins}
                             />
                             <span className="ml-2 text-sm text-gray-700">
                               {editForm.isActive ? 'Active' : 'Inactive'}
@@ -492,12 +507,12 @@ export function AdminAdminsPage() {
                             <button
                               onClick={() => handleEdit(admin)}
                               className="text-primary hover:text-primary-dark"
-                              disabled={!isSuperAdmin && admin.id !== currentAdminId}
-                              title={!isSuperAdmin && admin.id !== currentAdminId ? 'You can only edit your own account' : ''}
+                              disabled={!canManageAdmins && admin.id !== currentAdminId}
+                              title={!canManageAdmins && admin.id !== currentAdminId ? 'You can only edit your own account' : ''}
                             >
                               Edit
                             </button>
-                            {isSuperAdmin && admin.id !== currentAdminId && (
+                            {canManageAdmins && admin.id !== currentAdminId && (
                               <button
                                 onClick={() => handleDelete(admin)}
                                 disabled={deleteMutation.isPending}
