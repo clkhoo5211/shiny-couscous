@@ -10,6 +10,7 @@
 import { getGitHubClient, GitHubAPIError, isGitHubConfigured } from './github-client'
 import { loginUser, registerUser, getUserById, updateUserPassword, verifyJWT } from '@/lib/github-auth'
 import CryptoJS from 'crypto-js'
+import axios, { AxiosInstance } from 'axios'
 import type {
   FormResponse,
   FormSchemaResponse,
@@ -63,10 +64,7 @@ function paginateArray<T>(items: T[], page?: number, pageSize?: number): T[] {
 }
 
 /**
- * API Client Class - GitHub Implementation Only
- * 
- * This client ONLY uses GitHub API to read/write JSON files from backend/data directory.
- * No Python backend fallback - all data operations go through GitHub API.
+ * API Client Class - GitHub Implementation with Backend API Fallback
  */
 class APIClient {
   // Keep client property for backward compatibility (components may use it)
@@ -77,23 +75,56 @@ class APIClient {
     delete: (url: string) => Promise<any>
   }
   private token: string | null = null
+  private backendClient: AxiosInstance | null = null
+  private useBackendAPI: boolean = false
 
   constructor() {
-    // Always use GitHub API - no backend API fallback
-    // Create mock axios-like client for backward compatibility
-    this.client = {
-      get: async (url: string) => {
-        throw new Error(`Direct client.get() calls are not supported. Use API methods instead. URL: ${url}`)
-      },
-      post: async (url: string) => {
-        throw new Error(`Direct client.post() calls are not supported. Use API methods instead. URL: ${url}`)
-      },
-      put: async (url: string) => {
-        throw new Error(`Direct client.put() calls are not supported. Use API methods instead. URL: ${url}`)
-      },
-      delete: async (url: string) => {
-        throw new Error(`Direct client.delete() calls are not supported. Use API methods instead. URL: ${url}`)
-      },
+    // Check if we should use backend API (when GitHub is not configured)
+    this.useBackendAPI = !isGitHubConfigured()
+    
+    if (this.useBackendAPI) {
+      // Create backend API client
+      const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+      this.backendClient = axios.create({
+        baseURL: apiURL,
+        timeout: 30000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      // Add auth interceptor for backend API
+      this.backendClient.interceptors.request.use((config) => {
+        const token = this.getToken()
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`
+        }
+        return config
+      })
+
+      // Use backend client for direct calls
+      this.client = {
+        get: (url: string, config?: any) => this.backendClient!.get(url, config),
+        post: (url: string, data?: any, config?: any) => this.backendClient!.post(url, data, config),
+        put: (url: string, data?: any) => this.backendClient!.put(url, data),
+        delete: (url: string) => this.backendClient!.delete(url),
+      }
+    } else {
+      // Create mock axios-like client for backward compatibility (GitHub mode)
+      this.client = {
+        get: async (url: string) => {
+          throw new Error(`Direct client.get() calls are not supported. Use API methods instead. URL: ${url}`)
+        },
+        post: async (url: string) => {
+          throw new Error(`Direct client.post() calls are not supported. Use API methods instead. URL: ${url}`)
+        },
+        put: async (url: string) => {
+          throw new Error(`Direct client.put() calls are not supported. Use API methods instead. URL: ${url}`)
+        },
+        delete: async (url: string) => {
+          throw new Error(`Direct client.delete() calls are not supported. Use API methods instead. URL: ${url}`)
+        },
+      }
     }
   }
 
@@ -141,11 +172,14 @@ class APIClient {
     }
   }
 
-  // Helper to get GitHub client (throws if not available)
+  // Helper to get GitHub client (throws if not available and not using backend API)
   private getGitHubClientOrThrow() {
+    if (this.useBackendAPI) {
+      return null // Will use backend API instead
+    }
     const github = getGitHubClient()
     if (!github) {
-      throw new Error('GitHub API not configured. Please set VITE_GITHUB_OWNER, VITE_GITHUB_REPO, and VITE_GITHUB_TOKEN environment variables.')
+      throw new Error('No API client available. Please configure GitHub API or start backend server.')
     }
     return github
   }
@@ -159,8 +193,27 @@ class APIClient {
     pageSize?: number
     includeInactive?: boolean // New parameter to include inactive forms
   }): Promise<FormResponse[]> {
-    // Always use GitHub API to read from backend/data/forms.json
+    // Use backend API if GitHub is not configured (for localhost development)
+    if (this.useBackendAPI && this.backendClient) {
+      try {
+        const response = await this.backendClient.get('/api/forms', { 
+          params: {
+            ...params,
+            status: params?.includeInactive ? 'all' : params?.status,
+          }
+        })
+        return response.data
+      } catch (error: any) {
+        // If backend API fails, try GitHub API as fallback
+        console.warn('Backend API failed, trying GitHub API:', error.message)
+      }
+    }
+
+    // Use GitHub API (works on GitHub Pages and localhost if configured)
     const github = this.getGitHubClientOrThrow()
+    if (!github) {
+      throw new Error('No API client available')
+    }
     
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: FormResponse[] }>(
       'backend/data/forms.json'
@@ -184,8 +237,17 @@ class APIClient {
   }
 
   async getForm(formId: string): Promise<FormResponse> {
-    // Always use GitHub API to read from backend/data/forms.json
+    // Use backend API if GitHub is not configured
+    if (this.useBackendAPI && this.backendClient) {
+      const response = await this.backendClient.get(`/api/forms/${formId}`)
+      return response.data
+    }
+
+    // Use GitHub API
     const github = this.getGitHubClientOrThrow()
+    if (!github) {
+      throw new Error('No API client available')
+    }
     
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: any[] }>(
       'backend/data/forms.json'
@@ -201,8 +263,17 @@ class APIClient {
   }
 
   async getFormSchema(formId: string): Promise<FormSchemaResponse> {
-    // Always use GitHub API to read from backend/data/forms.json
+    // Use backend API if GitHub is not configured
+    if (this.useBackendAPI && this.backendClient) {
+      const response = await this.backendClient.get(`/api/forms/${formId}/schema`)
+      return response.data
+    }
+
+    // Use GitHub API
     const github = this.getGitHubClientOrThrow()
+    if (!github) {
+      throw new Error('No API client available')
+    }
     
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: any[] }>(
       'backend/data/forms.json'
@@ -504,8 +575,16 @@ class APIClient {
   }): Promise<SubmissionResponse[]> {
     const auth = this.verifyAuth()
     
-    // Always use GitHub API to read from backend/data/submissions.json
-    const github = this.getGitHubClientOrThrow()
+    // Use backend API if GitHub is not configured
+    if (this.useBackendAPI && this.backendClient) {
+      const response = await this.backendClient.get('/api/submissions', { params })
+      return response.data
+    }
+
+    const github = getGitHubClient()
+    if (!github) {
+      throw new Error('No API client available. Please configure GitHub API or start backend server.')
+    }
 
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: SubmissionResponse[] }>(
       'backend/data/submissions.json'
@@ -531,8 +610,16 @@ class APIClient {
   async getSubmission(submissionId: string): Promise<SubmissionResponse> {
     const auth = this.verifyAuth()
     
-    // Always use GitHub API to read from backend/data/submissions.json
-    const github = this.getGitHubClientOrThrow()
+    // Use backend API if GitHub is not configured
+    if (this.useBackendAPI && this.backendClient) {
+      const response = await this.backendClient.get(`/api/submissions/${submissionId}`)
+      return response.data
+    }
+
+    const github = getGitHubClient()
+    if (!github) {
+      throw new Error('No API client available. Please configure GitHub API or start backend server.')
+    }
 
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: SubmissionResponse[] }>(
       'backend/data/submissions.json'
@@ -636,8 +723,17 @@ class APIClient {
     await this.checkPermission('review_submissions')
     const auth = this.verifyAuth()
 
-    // Always use GitHub API to read from backend/data/submissions.json
-    const github = this.getGitHubClientOrThrow()
+    // Use backend API if GitHub is not configured
+    if (this.useBackendAPI && this.backendClient) {
+      const response = await this.backendClient.get('/api/admin/submissions', { params })
+      return response.data
+    }
+
+    // Same as getSubmissions but without user filter
+    const github = getGitHubClient()
+    if (!github) {
+      throw new Error('No API client available. Please configure GitHub API or start backend server.')
+    }
     
     const { data } = await github.readJsonFile<{ version: string; lastUpdated: string; items: SubmissionResponse[] }>(
       'backend/data/submissions.json'
@@ -734,8 +830,16 @@ class APIClient {
     await this.checkPermission('view_analytics')
     const auth = this.verifyAuth()
 
-    // Always use GitHub API to read from backend/data JSON files
-    const github = this.getGitHubClientOrThrow()
+    // Use backend API if GitHub is not configured
+    if (this.useBackendAPI && this.backendClient) {
+      const response = await this.backendClient.get('/api/admin/statistics')
+      return response.data
+    }
+
+    const github = getGitHubClient()
+    if (!github) {
+      throw new Error('No API client available. Please configure GitHub API or start backend server.')
+    }
     
     // Read submissions and forms
     const [submissionsData, formsData] = await Promise.all([
