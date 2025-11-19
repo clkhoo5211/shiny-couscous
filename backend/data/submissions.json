@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-11-19T02:14:56.967Z",
+  "lastUpdated": "2025-11-19T02:19:53.824Z",
   "items": [
     {
       "id": "SUB-20251118-960173",
@@ -643,7 +643,7 @@
       "status": "draft",
       "submittedBy": "user-1763518430250-288x1p3ly",
       "createdAt": "2025-11-19T02:14:56.967Z",
-      "updatedAt": "2025-11-19T02:14:56.967Z",
+      "updatedAt": "2025-11-19T02:19:53.824Z",
       "data": {
         "step-1-general-info": {
           "partyResponsible": "applicant-shareholder",
@@ -656,6 +656,33 @@
             "website"
           ],
           "consentDisclosure": "yes"
+        },
+        "step-2-applicant-profile": {
+          "applicantName": "Test Labuan Company Sdn Bhd",
+          "licenseType": [
+            "conventional"
+          ],
+          "legalEntity": "labuan-company-subsidiary",
+          "marketingOffice": "yes",
+          "paidUpCapital": 100000,
+          "processingType": "normal",
+          "shareholders": [
+            {
+              "shareholderName": "Test Shareholder Ltd",
+              "shareholderCountry": "Malaysia",
+              "shareholderPercentage": 100
+            }
+          ],
+          "directors": [
+            {
+              "directorName": "John Director",
+              "directorNationality": "Malaysian",
+              "directorPosition": "Managing Director"
+            }
+          ]
+        },
+        "step-3-business-plan": {
+          "financialProjectionCurrency": "USD"
         }
       }
     }
