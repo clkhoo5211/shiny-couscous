@@ -98,10 +98,6 @@ export function AdminRolesPage() {
   })
 
   const handleEdit = (role: AdminRole) => {
-    if (role.isSystem) {
-      showError('System roles cannot be edited. You can only modify permissions and status.', 'Edit Restricted')
-      return
-    }
     setEditingRole(role)
     setEditForm({
       name: role.name,
@@ -462,8 +458,7 @@ export function AdminRolesPage() {
                             <button
                               onClick={() => handleEdit(role)}
                               className="text-primary hover:text-primary-dark"
-                              disabled={role.isSystem}
-                              title={role.isSystem ? 'System roles cannot be fully edited' : 'Edit role'}
+                              title="Edit role"
                             >
                               Edit
                             </button>
