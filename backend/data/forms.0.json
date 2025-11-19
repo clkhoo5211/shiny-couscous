@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-11-19T05:39:26.412Z",
+  "lastUpdated": "2025-11-19T05:41:47.707Z",
   "items": [
     {
       "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -9,7 +9,7 @@
       "description": "Application for Licence to Carry on Labuan Company Management Business under Sections 131, Labuan Financial Services and Securities Act 2010",
       "category": "Licensing",
       "version": "1.0.0",
-      "isActive": false,
+      "isActive": true,
       "schemaData": {
         "formId": "labuan-company-management-license",
         "formName": "Application for Licence to Carry on Labuan Company Management Business",
@@ -877,7 +877,7 @@
       "requiresAuth": true,
       "estimatedTime": "2-3 hours",
       "createdAt": "2024-11-17T15:34:58Z",
-      "updatedAt": "2025-11-19T05:39:26.412Z",
+      "updatedAt": "2025-11-18T14:29:22.297186Z",
       "createdBy": null,
       "updatedBy": null
     }
