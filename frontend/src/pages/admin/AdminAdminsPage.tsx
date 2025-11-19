@@ -222,14 +222,12 @@ export function AdminAdminsPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Management</h1>
           <p className="text-gray-600">Manage admin accounts and privileges</p>
         </div>
-        {isSuperAdmin && (
-          <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="btn btn-primary"
-          >
-            + Create New Admin
-          </button>
-        )}
+        <button
+          onClick={() => setShowCreateForm(!showCreateForm)}
+          className="btn btn-primary"
+        >
+          + Create New Admin
+        </button>
       </div>
 
       {/* Create Admin Form */}
