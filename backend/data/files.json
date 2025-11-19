@@ -55,6 +55,17 @@
       "mimeType": "application/pdf",
       "storageLocation": "github",
       "uploadedAt": "2025-11-19T07:21:27.703Z"
+    },
+    {
+      "id": "file-1763540091930-v93r85gx3",
+      "fileId": "supportingDocuments_1763540088101_42a99b07-1666-440a-8dc9-2ab8208c44cb.jpeg",
+      "fieldName": "supportingDocuments",
+      "fileName": "42a99b07-1666-440a-8dc9-2ab8208c44cb.jpeg",
+      "filePath": "backend/uploads/supportingDocuments_1763540088101_42a99b07-1666-440a-8dc9-2ab8208c44cb.jpeg",
+      "fileSize": 273294,
+      "mimeType": "image/jpeg",
+      "storageLocation": "github",
+      "uploadedAt": "2025-11-19T08:14:51.930Z"
     }
   ]
 }
