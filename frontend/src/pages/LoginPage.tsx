@@ -43,7 +43,7 @@ export function LoginPage() {
       }
 
       // Redirect to dashboard or home
-      navigate('/submissions')
+      navigate('/dashboard')
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.')
     } finally {
