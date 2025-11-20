@@ -390,60 +390,76 @@ export function DynamicForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-      {/* Step indicator (for multi-step forms) */}
+      {/* Step indicator (for multi-step forms) - Enhanced */}
       {isMultiStep && (
-        <div className="mb-4 sm:mb-6">
-          {/* Desktop Step Indicator */}
-          <div className="hidden sm:flex items-center justify-between overflow-x-auto pb-2">
-            {steps.map((step, index) => (
-              <div key={step.stepId} className="flex items-center flex-shrink-0">
-                <div
-                  className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-xs sm:text-sm font-medium ${
-                    index === currentStep
-                      ? 'bg-primary text-white'
-                      : index < currentStep
-                      ? 'bg-success text-white'
-                      : 'bg-gray-200 text-gray-600'
-                  }`}
-                >
-                  {index + 1}
+        <div className="mb-6 sm:mb-8">
+          {/* Desktop Step Indicator - Modern Design */}
+          <div className="hidden sm:block bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6">
+            <div className="flex items-center justify-between">
+              {steps.map((step, index) => (
+                <div key={step.stepId} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`relative flex items-center justify-center w-12 h-12 lg:w-14 lg:h-14 rounded-2xl text-sm lg:text-base font-black transition-all duration-300 shadow-lg ${
+                        index === currentStep
+                          ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white scale-110 ring-4 ring-blue-200'
+                          : index < currentStep
+                          ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
+                          : 'bg-gray-200 text-gray-500'
+                      }`}
+                    >
+                      {index < currentStep ? (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span>{index + 1}</span>
+                      )}
+                    </div>
+                    <p className={`mt-2 text-xs lg:text-sm font-bold text-center max-w-[100px] ${
+                      index === currentStep ? 'text-blue-600' : index < currentStep ? 'text-green-600' : 'text-gray-500'
+                    }`}>
+                      {step.stepName}
+                    </p>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className="flex-1 px-4">
+                      <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${
+                            index < currentStep ? 'bg-gradient-to-r from-green-500 to-emerald-500 w-full' : 'w-0'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`hidden md:block w-12 lg:w-16 h-1 mx-2 ${
-                      index < currentStep ? 'bg-success' : 'bg-gray-200'
-                    }`}
-                  />
-                )}
-                {index < steps.length - 1 && (
-                  <div
-                    className={`md:hidden w-8 h-1 mx-1 ${
-                      index < currentStep ? 'bg-success' : 'bg-gray-200'
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          {/* Mobile Step Indicator (Simplified) */}
-          <div className="sm:hidden flex items-center justify-center gap-2 mb-2">
-            {steps.map((step, index) => (
-              <div
-                key={step.stepId}
-                className={`w-2 h-2 rounded-full ${
-                  index === currentStep
-                    ? 'bg-primary'
-                    : index < currentStep
-                    ? 'bg-success'
-                    : 'bg-gray-200'
-                }`}
-              />
-            ))}
-          </div>
-          <div className="mt-2 text-center">
-            <p className="text-xs sm:text-sm text-gray-600">
-              Step {currentStep + 1} of {steps.length}: <span className="font-medium">{currentStepData.stepName}</span>
-            </p>
+          
+          {/* Mobile Step Indicator - Modern Dots */}
+          <div className="sm:hidden bg-white rounded-xl shadow-lg border-2 border-gray-100 p-5">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              {steps.map((step, index) => (
+                <div
+                  key={step.stepId}
+                  className={`transition-all duration-300 rounded-full ${
+                    index === currentStep
+                      ? 'w-8 h-3 bg-gradient-to-r from-blue-600 to-indigo-600'
+                      : index < currentStep
+                      ? 'w-3 h-3 bg-gradient-to-r from-green-500 to-emerald-500'
+                      : 'w-3 h-3 bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-bold text-gray-900">
+                Step {currentStep + 1} of {steps.length}
+              </p>
+              <p className="text-xs text-gray-600 mt-1 font-semibold">{currentStepData.stepName}</p>
+            </div>
           </div>
         </div>
       )}
@@ -457,16 +473,19 @@ export function DynamicForm({
         onBlur={handleFieldBlur}
       />
 
-      {/* Form actions */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 pt-4 sm:pt-6 border-t">
+      {/* Form actions - Enhanced */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 sm:gap-5 pt-6 sm:pt-8 border-t-2 border-gray-200 p-6">
         <div className="w-full sm:w-auto">
           {isMultiStep && currentStep > 0 && (
             <button
               type="button"
               onClick={handlePrevious}
-              className="btn btn-secondary w-full sm:w-auto text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm sm:text-base font-bold text-gray-700 bg-white border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-x-1"
             >
-              ← Previous
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Previous
             </button>
           )}
         </div>
@@ -475,8 +494,11 @@ export function DynamicForm({
             <button
               type="button"
               onClick={handleSaveDraft}
-              className="btn btn-secondary w-full sm:w-auto text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 order-2 sm:order-1"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm sm:text-base font-bold text-gray-700 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-300 order-2 sm:order-1"
             >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
               Save Draft
             </button>
           )}
@@ -484,17 +506,32 @@ export function DynamicForm({
             <button
               type="button"
               onClick={handleNext}
-              className="btn btn-primary w-full sm:w-auto text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 order-1 sm:order-2"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 text-sm sm:text-base font-black text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:via-indigo-700 hover:to-blue-800 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:translate-x-1 order-1 sm:order-2"
             >
-              Next →
+              Next
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           ) : (
             <button
               type="submit"
               disabled={validateMutation.isPending}
-              className="btn btn-primary w-full sm:w-auto text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 order-1 sm:order-2"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 text-sm sm:text-base font-black text-white bg-gradient-to-r from-green-600 via-emerald-600 to-green-700 hover:from-green-700 hover:via-emerald-700 hover:to-green-800 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
             >
-              {validateMutation.isPending ? 'Submitting...' : schema.submitButton?.label || 'Submit'}
+              {validateMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  {schema.submitButton?.label || 'Submit'}
+                </>
+              )}
             </button>
           )}
         </div>
