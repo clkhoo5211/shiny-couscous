@@ -225,7 +225,7 @@ export function Layout({ children }: LayoutProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-3 sm:py-4 min-h-[64px] sm:min-h-[72px]">
             {/* Logo Section */}
-            <Link to="/dashboard" className="flex items-center space-x-3 flex-shrink-0 group">
+            <Link to={isAdminRoute ? "/admin" : "/dashboard"} className="flex items-center space-x-3 flex-shrink-0 group">
               {/* Logo Image */}
               <div className="relative overflow-hidden rounded-xl flex-shrink-0 transition-transform group-hover:scale-105 duration-300">
                 <img 
