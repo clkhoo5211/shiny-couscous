@@ -57,7 +57,10 @@ jobs:
       - name: Create 404.html for SPA routing
         run: |
           # Copy index.html to 404.html for GitHub Pages SPA routing
+          # This ensures React Router can handle direct URL navigation
           cp dist/index.html dist/404.html
+          # Also create a .nojekyll file to prevent Jekyll processing
+          touch dist/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

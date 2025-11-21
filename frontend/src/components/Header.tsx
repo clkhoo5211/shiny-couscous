@@ -253,7 +253,7 @@ const Header = () => {
             {/* Logo */}
             <Link to="/" className="flex-shrink-0 group">
               <img 
-                src="/logo_lfsa.png" 
+                src={`${import.meta.env.BASE_URL}logo_lfsa.png`}
                 alt="Labuan FSA - Financial Services Authority" 
                 className="h-14 w-auto object-contain group-hover:opacity-90 transition-opacity duration-200"
               />

@@ -16,10 +16,11 @@ const queryClient = new QueryClient({
   },
 })
 
-// Get base path from environment variable or default to '/'
+// Get base path from Vite (automatically set from vite.config.ts base option)
 // For GitHub Pages: '/shiny-couscous/'
 // For local dev: '/'
-const basename = import.meta.env.VITE_BASE_PATH || '/'
+// BASE_URL is automatically set by Vite based on the 'base' config option
+const basename = import.meta.env.BASE_URL || '/'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={queryClient}>

@@ -229,7 +229,7 @@ export function Layout({ children }: LayoutProps) {
               {/* Logo Image */}
               <div className="relative overflow-hidden flex-shrink-0 transition-transform group-hover:scale-105 duration-300">
                 <img 
-                  src="/logo_lfsa.png" 
+                  src={`${import.meta.env.BASE_URL}logo_lfsa.png`}
                   alt="Labuan FSA" 
                   className="h-12 sm:h-14 w-auto object-contain"
                 />
