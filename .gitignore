@@ -103,3 +103,9 @@ Thumbs.db
 # Local development
 local/
 *.local
+
+# Exclude markdown files
+*.md
+
+# Exclude docs directory
+docs/

@@ -28,3 +28,9 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Exclude markdown files
+*.md
+
+# Exclude docs directory
+docs/
+
