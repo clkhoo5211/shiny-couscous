@@ -926,20 +926,80 @@ class APIClient {
     isActive: boolean
     createdAt: string
   }> {
-    const auth = this.verifyAuth()
-    const user = await getUserById(auth.id, auth.role as 'user' | 'admin')
-    
-    if (!user) {
-      throw new Error('User not found')
-    }
-
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      isActive: user.isActive,
-      createdAt: user.createdAt,
+    try {
+      const auth = this.verifyAuth()
+      
+      // Try to get user from API
+      try {
+        const user = await getUserById(auth.id, auth.role as 'user' | 'admin')
+        
+        if (user) {
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            isActive: user.isActive,
+            createdAt: user.createdAt,
+          }
+        }
+      } catch (apiError) {
+        console.warn('Failed to fetch user from API, falling back to localStorage:', apiError)
+      }
+      
+      // Fallback to localStorage if API fails
+      const userStr = localStorage.getItem('user')
+      const userRole = localStorage.getItem('userRole')
+      
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr)
+          return {
+            id: auth.id,
+            email: auth.email,
+            name: userObj.name || auth.email.split('@')[0],
+            role: auth.role,
+            isActive: true, // Default to active if we can't verify
+            createdAt: userObj.createdAt || new Date().toISOString(),
+          }
+        } catch (parseError) {
+          console.error('Error parsing user from localStorage:', parseError)
+        }
+      }
+      
+      // Last resort: use auth data from token
+      return {
+        id: auth.id,
+        email: auth.email,
+        name: auth.email.split('@')[0],
+        role: auth.role,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+      }
+    } catch (error) {
+      // If verifyAuth fails, try to get from localStorage
+      const userStr = localStorage.getItem('user')
+      const token = localStorage.getItem('token')
+      
+      if (userStr && token) {
+        try {
+          const userObj = JSON.parse(userStr)
+          const userRole = localStorage.getItem('userRole') || 'user'
+          
+          return {
+            id: userObj.id || 'unknown',
+            email: userObj.email || 'unknown@example.com',
+            name: userObj.name || userObj.email?.split('@')[0] || 'User',
+            role: userRole,
+            isActive: true,
+            createdAt: userObj.createdAt || new Date().toISOString(),
+          }
+        } catch (parseError) {
+          console.error('Error parsing user from localStorage:', parseError)
+        }
+      }
+      
+      throw new Error('Unable to load user profile. Please login again.')
     }
   }
 

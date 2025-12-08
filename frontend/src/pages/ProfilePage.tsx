@@ -31,6 +31,9 @@ export function ProfilePage() {
   const { data: user, isLoading, error } = useQuery<UserProfile>({
     queryKey: ['user-profile'],
     queryFn: () => apiClient.getCurrentUser(),
+    retry: 2, // Retry twice on failure
+    retryDelay: 1000, // Wait 1 second between retries
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
   })
 
   // Update profile mutation
@@ -201,10 +204,46 @@ export function ProfilePage() {
   }
 
   if (error || !user) {
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : 'Error loading profile. Please try again.'
+    
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">Error loading profile. Please try again.</p>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3 flex-1">
+              <h3 className="text-sm font-medium text-red-800 mb-1">Error Loading Profile</h3>
+              <p className="text-sm text-red-700">{errorMessage}</p>
+              <div className="mt-4">
+                <button
+                  onClick={() => {
+                    // Try to reload
+                    queryClient.invalidateQueries({ queryKey: ['user-profile'] })
+                  }}
+                  className="btn btn-primary btn-sm"
+                >
+                  Retry
+                </button>
+                <button
+                  onClick={() => {
+                    // Clear and redirect to login
+                    apiClient.logout()
+                    localStorage.clear()
+                    navigate('/login')
+                  }}
+                  className="btn btn-secondary btn-sm ml-2"
+                >
+                  Logout & Login Again
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     )
