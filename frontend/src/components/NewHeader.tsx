@@ -64,7 +64,7 @@ export function NewHeader({ transparent = false }: NewHeaderProps) {
             {/* E-Submission Button */}
             <Link
               to="/login"
-              className={`inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all uppercase tracking-[0.08em] text-sm shadow-lg hover:shadow-xl ${transparent && !isScrolled ? '' : ''}`}
+              className={`inline-flex items-center gap-2 px-6 py-3 bg-[oklch(70.4%_0.14_182.503)] text-white font-semibold rounded-lg hover:bg-[oklch(65%_0.14_182.503)] transition-all uppercase tracking-[0.08em] text-sm shadow-lg hover:shadow-xl ${transparent && !isScrolled ? '' : ''}`}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -104,7 +104,7 @@ export function NewHeader({ transparent = false }: NewHeaderProps) {
             </a>
             <Link
               to="/login"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all uppercase tracking-[0.08em] text-sm mt-4"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[oklch(70.4%_0.14_182.503)] text-white font-semibold rounded-lg hover:bg-[oklch(65%_0.14_182.503)] transition-all uppercase tracking-[0.08em] text-sm mt-4"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
