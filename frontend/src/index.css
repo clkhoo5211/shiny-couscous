@@ -1,6 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Design Tokens - MIFC Marketing Site */
+:root {
+  /* Colors */
+  --color-primary: #66D8CC;
+  --color-accent-gold: #C99A6B;
+  --color-accent-red: #8A2F2F;
+  --color-bg-white: #FFFFFF;
+  --color-text-dark: #111111;
+  --color-text-muted: #6B7280;
+  
+  /* Typography */
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  
+  /* Font Sizes */
+  --text-h1: 96px;
+  --text-h2: 48px;
+  --text-h3: 32px;
+  --text-body: 18px;
+  --text-nav: 14px;
+  
+  /* Line Heights */
+  --leading-tight: 0.95;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.55;
+  
+  /* Letter Spacing */
+  --tracking-tight: -1px;
+  --tracking-wide: 0.08em;
+}
 
 @layer base {
   * {
@@ -8,28 +41,32 @@
   }
   
   body {
-    @apply bg-gray-50 text-gray-900 font-sans antialiased;
-    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-    background-attachment: fixed;
-    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--leading-relaxed);
+    color: var(--color-text-dark);
+    -webkit-font-smoothing: antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold text-gray-900;
-    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: var(--font-heading);
+    font-weight: 700;
   }
 
   h1 {
-    @apply text-2xl sm:text-3xl lg:text-4xl;
-    color: #1e293b;
+    font-size: var(--text-h1);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
   }
 
   h2 {
-    @apply text-xl sm:text-2xl lg:text-3xl;
+    font-size: var(--text-h2);
+    line-height: 1.1;
   }
 
   h3 {
-    @apply text-lg sm:text-xl lg:text-2xl;
+    font-size: var(--text-h3);
+    line-height: 1.2;
   }
 
   h4 {
@@ -42,6 +79,29 @@
 
   h6 {
     @apply text-xs sm:text-sm lg:text-base;
+  }
+
+  p {
+    font-size: var(--text-body);
+    line-height: var(--leading-relaxed);
+  }
+}
+
+/* Responsive Typography */
+@media (max-width: 1024px) {
+  :root {
+    --text-h1: 64px;
+    --text-h2: 40px;
+    --text-h3: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --text-h1: 48px;
+    --text-h2: 32px;
+    --text-h3: 24px;
+    --text-body: 16px;
   }
 }
 

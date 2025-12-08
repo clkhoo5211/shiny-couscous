@@ -22,8 +22,8 @@ const DEFAULT_LICENSE_TYPES: SelectOption[] = [
   { value: 'leasing', label: 'Leasing License' },
   { value: 'money-broker', label: 'Money Broker License' },
   { value: 'money-lender', label: 'Money Lender License' },
-  { value: 'labuan-company', label: 'Labuan Company Registration' },
-  { value: 'foundation', label: 'Labuan Foundation' },
+  { value: 'labuan-company', label: 'Maldives Company Registration' },
+  { value: 'foundation', label: 'Maldives Foundation' },
   { value: 'limited-partnership', label: 'Limited Partnership' },
   { value: 'other', label: 'Other (Please specify)' },
 ]

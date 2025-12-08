@@ -93,14 +93,14 @@ const Header = () => {
 
   const navigation = [
     {
-      name: 'About Labuan FSA',
+      name: 'About Maldives FSA',
       href: '#about',
       submenu: [
         { 
           name: 'The Regulator', 
           href: '#regulator',
           submenu: [
-            { name: 'Functions of Labuan FSA', href: '#functions' },
+            { name: 'Functions of Maldives FSA', href: '#functions' },
             { name: 'Authority Members', href: '#authority-members' },
             { name: 'Audit & Risk Management Committee (ARMC)', href: '#armc' },
             { name: 'Nomination & Remuneration Committee (NRC)', href: '#nrc' },
@@ -134,16 +134,16 @@ const Header = () => {
           ]
         },
         { 
-          name: 'Labuan Structures', 
+          name: 'Maldives Structures', 
           href: '#structures',
           submenu: [
-            { name: 'Labuan Companies', href: '#labuan-companies-structures' },
+            { name: 'Maldives Companies', href: '#labuan-companies-structures' },
             { name: 'Protected Cell Companies', href: '#protected-cell-companies' },
             { name: 'Partnerships', href: '#partnerships' },
           ]
         },
         { 
-          name: 'Labuan Service Providers', 
+          name: 'Maldives Service Providers', 
           href: '#service-providers',
           submenu: [
             { name: 'Trust Companies and Ancillary Services', href: '#trust-companies-services' },
@@ -182,7 +182,7 @@ const Header = () => {
             { name: 'Banking', href: '#banking-guidelines' },
             { name: 'Insurance', href: '#insurance-guidelines' },
             { name: 'Trust Companies', href: '#trust-companies-guidelines' },
-            { name: 'Labuan Companies', href: '#labuan-companies-guidelines' },
+            { name: 'Maldives Companies', href: '#labuan-companies-guidelines' },
             { name: 'Capital Markets', href: '#capital-markets-guidelines' },
             { name: 'Islamic Business', href: '#islamic-business' },
             { name: 'Other Businesses', href: '#other-businesses' },
@@ -206,7 +206,7 @@ const Header = () => {
       submenu: [
         { name: 'General Notification', href: '#notifications' },
         { name: 'Communication on Covid-19', href: '#communications-covid-19' },
-        { name: 'Pictures of Labuan FSA Past Events/ Programmes', href: '#pictures-past-events' },
+        { name: 'Pictures of Maldives FSA Past Events/ Programmes', href: '#pictures-past-events' },
         { name: 'Presentation Slides / Videos', href: '#presentation-slides-videos' },
         { name: 'Publications', href: '#publications' },
         { name: 'Investor Alerts', href: '#investor-alerts' },
@@ -230,7 +230,7 @@ const Header = () => {
       submenu: [
         { name: 'AML & CFT Compliance', href: '#aml-compliance' },
         { name: 'Guidelines, Directives & Circulars', href: '#aml-guidelines' },
-        { name: 'Enforcement Actions on Labuan Licensed Entities for AML/CFT Related Non-Compliances', href: '#aml-enforcement' },
+        { name: 'Enforcement Actions on Maldives Licensed Entities for AML/CFT Related Non-Compliances', href: '#aml-enforcement' },
       ],
     },
     {
@@ -253,8 +253,8 @@ const Header = () => {
             {/* Logo */}
             <Link to="/" className="flex-shrink-0 group">
               <img 
-                src={`${import.meta.env.BASE_URL}logo_lfsa.png`}
-                alt="Labuan FSA - Financial Services Authority" 
+                src="/b9b5db8fc75b8b5a6459688096c17bcc763cf37a.png"
+                alt="Maldives FSA - Financial Services Authority" 
                 className="h-14 w-auto object-contain group-hover:opacity-90 transition-opacity duration-200"
               />
             </Link>

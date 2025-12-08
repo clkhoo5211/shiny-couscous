@@ -53,14 +53,14 @@ const DEFAULT_STATUSES: StatusStep[] = [
   {
     status: 'under-review',
     label: 'Under Review',
-    description: 'Application is being reviewed by Labuan FSA',
+    description: 'Application is being reviewed by Maldives FSA',
     completed: false,
     current: false,
   },
   {
     status: 'additional-info-required',
     label: 'Additional Information Required',
-    description: 'Labuan FSA has requested additional information',
+    description: 'Maldives FSA has requested additional information',
     completed: false,
     current: false,
   },

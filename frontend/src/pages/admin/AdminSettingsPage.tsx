@@ -9,7 +9,7 @@ export function AdminSettingsPage() {
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<'general' | 'users' | 'integrations' | 'security'>('general')
   const [settings, setSettings] = useState({
-    siteName: 'Labuan FSA E-Submission System',
+    siteName: 'Maldives FSA E-Submission System',
     siteUrl: 'https://submission.labuanfsa.gov.my',
     maintenanceMode: false,
     allowRegistration: true,

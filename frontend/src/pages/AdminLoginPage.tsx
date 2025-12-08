@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import apiClient from '@/api/client'
 import { cn } from '@/lib/utils'
+import mifcLogo from '@/assets/mifc-logo.png'
 
 export function AdminLoginPage() {
   const navigate = useNavigate()
@@ -63,6 +64,13 @@ export function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
+          <div className="flex justify-center mb-6">
+            <img 
+              src={mifcLogo}
+              alt="MIFC Logo" 
+              className="h-16 w-auto object-contain"
+            />
+          </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Admin Login
           </h2>

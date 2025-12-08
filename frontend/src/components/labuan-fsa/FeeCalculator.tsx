@@ -234,7 +234,7 @@ export function FeeCalculator({
       )}
       {helpText && !error && (
         <p id={`${fieldId}-help`} className="help-text">
-          {helpText || 'Fees are calculated based on the selected license type. Please refer to the Labuan FSA Fee Schedule for detailed information.'}
+          {helpText || 'Fees are calculated based on the selected license type. Please refer to the Maldives FSA Fee Schedule for detailed information.'}
         </p>
       )}
     </div>

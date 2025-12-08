@@ -39,7 +39,8 @@ function App() {
       <Route path="/banking" element={<BankingPage />} />
       
       {/* E-Submission System - Uses same Header/Footer as corporate site */}
-      <Route path="/e-submission" element={
+      {/* Temporarily removed /e-submission route */}
+      {/* <Route path="/e-submission" element={
         <>
           <Header />
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -47,7 +48,7 @@ function App() {
           </main>
           <Footer />
         </>
-      } />
+      } /> */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/admin/login" element={<AdminLoginPage />} />
       <Route path="/register" element={<RegisterPage />} />

@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import apiClient from '@/api/client'
 import { isAdminRole, preloadAdminRoles, isAdminRoleSync, getRolePermissions } from '@/lib/role-utils'
+import mifcLogo from '@/assets/mifc-logo.png'
 
 interface LayoutProps {
   children: ReactNode
@@ -229,8 +230,8 @@ export function Layout({ children }: LayoutProps) {
               {/* Logo Image */}
               <div className="relative overflow-hidden flex-shrink-0 transition-transform group-hover:scale-105 duration-300">
                 <img 
-                  src={`${import.meta.env.BASE_URL}logo_lfsa.png`}
-                  alt="Labuan FSA" 
+                  src={mifcLogo}
+                  alt="Maldives FSA" 
                   className="h-12 sm:h-14 w-auto object-contain"
                 />
               </div>
@@ -386,7 +387,7 @@ export function Layout({ children }: LayoutProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between">
             <p className="text-sm text-gray-600">
-              © 2025 Labuan Financial Services Authority. All rights reserved.
+              © 2025 Maldives Financial Services Authority. All rights reserved.
             </p>
 
             <div className="mt-3 sm:mt-0 flex gap-6">

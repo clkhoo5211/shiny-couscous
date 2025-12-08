@@ -31,7 +31,7 @@ export function HomePage() {
             </div>
             
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6 leading-tight">
-              Labuan FSA<br />E-Submission System
+              Maldives FSA<br />E-Submission System
             </h1>
             <p className="text-lg sm:text-xl lg:text-2xl text-blue-100 mb-10 px-2 max-w-3xl mx-auto leading-relaxed">
               Streamline your regulatory submissions with our secure, efficient digital platform designed for financial institutions

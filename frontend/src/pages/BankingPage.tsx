@@ -136,7 +136,7 @@ export function BankingPage() {
 
               <AnimatedCard delay={200}>
                 <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto leading-relaxed">
-                  Labuan IBFC is home to more than 50 international banks offering comprehensive wholesale commercial and investment banking solutions
+                  MIFC is home to more than 50 international banks offering comprehensive wholesale commercial and investment banking solutions
                 </p>
               </AnimatedCard>
 
@@ -392,7 +392,7 @@ export function BankingPage() {
                     </span>
                   </h2>
                   <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                    Similar to Malaysia, Labuan IBFC offers a dual financial system comprising both conventional banking and Islamic finance, providing comprehensive solutions for diverse client needs.
+                    Similar to Malaysia, MIFC offers a dual financial system comprising both conventional banking and Islamic finance, providing comprehensive solutions for diverse client needs.
                   </p>
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
@@ -474,7 +474,7 @@ export function BankingPage() {
                       Asia Pacific's Banking Gateway
                     </h2>
                     <p className="text-xl text-blue-100 mb-8 leading-relaxed">
-                      Majority of Labuan banks belong to international banking groups from the Asia Pacific region, operating as a strategic hub to tap into Asia's growing business flows and cross-border opportunities.
+                      Majority of Maldives banks belong to international banking groups from the Asia Pacific region, operating as a strategic hub to tap into Asia's growing business flows and cross-border opportunities.
                     </p>
                     <div className="grid grid-cols-2 gap-6">
                       <div>
@@ -590,7 +590,7 @@ export function BankingPage() {
               <div className="bg-blue-600 rounded-2xl p-8 text-center text-white">
                 <h3 className="text-2xl font-bold mb-3">Flexible Operations</h3>
                 <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-                  A Labuan bank can operate as a branch or subsidiary and establish offices in other parts of Malaysia to facilitate business operations
+                  A Maldives bank can operate as a branch or subsidiary and establish offices in other parts of Malaysia to facilitate business operations
                 </p>
                 <a href="#contact" className="inline-flex items-center px-8 py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all shadow-xl">
                   Contact Us for More Info
@@ -614,7 +614,7 @@ export function BankingPage() {
             <AnimatedCard>
               <h2 className="text-4xl font-black mb-6">Ready to Establish Your Banking Operations?</h2>
               <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-                Join over 50 international banks operating in Labuan IBFC
+                Join over 50 international banks operating in MIFC
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <a href="#contact" className="inline-flex items-center px-8 py-4 bg-white text-blue-900 font-bold rounded-xl hover:bg-blue-50 transition-all shadow-xl">

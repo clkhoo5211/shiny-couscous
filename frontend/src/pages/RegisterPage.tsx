@@ -112,11 +112,18 @@ export function RegisterPage() {
           <div className="bg-white rounded-lg shadow-sm border border-slate-200">
             {/* Card Header */}
             <div className="px-8 pt-10 pb-6 border-b border-slate-100">
+              <div className="flex justify-center mb-6">
+                <img 
+                  src="/b9b5db8fc75b8b5a6459688096c17bcc763cf37a.png"
+                  alt="MIFC Logo" 
+                  className="h-16 w-auto object-contain"
+                />
+              </div>
               <h1 className="text-2xl font-semibold text-slate-900 mb-2">
                 Create Account
               </h1>
               <p className="text-sm text-slate-600">
-                Labuan FSA E-Submission Portal
+                Maldives FSA E-Submission Portal
               </p>
             </div>
 

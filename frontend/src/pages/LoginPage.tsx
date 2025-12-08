@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import apiClient from '@/api/client'
 import { cn } from '@/lib/utils'
+import mifcLogo from '@/assets/mifc-logo.png'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -77,11 +78,18 @@ export function LoginPage() {
           <div className="bg-white rounded-lg shadow-sm border border-slate-200">
             {/* Card Header */}
             <div className="px-8 pt-10 pb-6 border-b border-slate-100">
+              <div className="flex justify-center mb-6">
+                <img 
+                  src={mifcLogo}
+                  alt="MIFC Logo" 
+                  className="h-16 w-auto object-contain"
+                />
+              </div>
               <h1 className="text-2xl font-semibold text-slate-900 mb-2">
                 Sign In
               </h1>
               <p className="text-sm text-slate-600">
-                Labuan FSA E-Submission Portal
+                Maldives FSA E-Submission Portal
               </p>
             </div>
 
@@ -169,10 +177,10 @@ export function LoginPage() {
               {/* Demo Credentials */}
               <div className="pt-4 border-t border-slate-200">
                 <div className="p-3 bg-slate-50 rounded-md">
-                  <p className="text-xs font-medium text-slate-700 mb-2">Demo Account</p>
+                  <p className="!text-xs font-medium text-slate-700 mb-2">Demo Account</p>
                   <div className="text-xs text-slate-600 space-y-1">
-                    <p><span className="font-medium">Email:</span> user@example.com</p>
-                    <p><span className="font-medium">Password:</span> user123</p>
+                    <p className="!text-xs"><span className="font-medium">Email:</span> user@example.com</p>
+                    <p className="!text-xs"><span className="font-medium">Password:</span> user123</p>
                   </div>
                 </div>
               </div>

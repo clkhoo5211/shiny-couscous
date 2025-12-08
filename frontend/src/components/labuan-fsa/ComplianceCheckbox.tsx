@@ -12,8 +12,8 @@ export interface ComplianceCheckboxProps extends BaseFieldProps {
 const DEFAULT_COMPLIANCE_TEXT = `I hereby declare that:
 1. All information provided in this application is true and accurate to the best of my knowledge.
 2. I understand that any false or misleading information may result in the rejection of this application or revocation of any license granted.
-3. I agree to comply with all applicable Labuan FSA laws, regulations, and guidelines.
-4. I authorize Labuan FSA to conduct any necessary background checks and verification.
+3. I agree to comply with all applicable Maldives FSA laws, regulations, and guidelines.
+4. I authorize Maldives FSA to conduct any necessary background checks and verification.
 5. I understand that the processing fee is non-refundable regardless of the application outcome.`
 
 export function ComplianceCheckbox({

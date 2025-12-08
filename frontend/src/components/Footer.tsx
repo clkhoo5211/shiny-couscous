@@ -10,14 +10,14 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* About Section */}
           <div>
-            <h3 className="text-white font-heading font-semibold text-lg mb-4">Labuan FSA</h3>
+            <h3 className="text-white font-heading font-semibold text-lg mb-4">Maldives FSA</h3>
             <p className="text-sm leading-relaxed">
-              Labuan Financial Services Authority - The regulatory body for Labuan International Business and Financial Centre.
+              Maldives Financial Services Authority - The regulatory body for Maldives International Business and Financial Centre.
             </p>
             <div className="mt-4">
               <img 
                 src="https://www.labuanfsa.gov.my/clients/asset_120A5FB8-61B6-45E8-93F0-3F79F86455C8/contentms/img/about-labuan-fsa/Logo/logo-labuanfsa.png" 
-                alt="Labuan FSA Logo" 
+                alt="Maldives FSA Logo" 
                 className="h-16 w-auto"
               />
             </div>
@@ -29,7 +29,7 @@ const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li>
                 <a href="#about" className="hover:text-blue-400 transition-colors">
-                  About Labuan FSA
+                  About Maldives FSA
                 </a>
               </li>
               <li>
@@ -174,7 +174,7 @@ const Footer = () => {
       <div className="bg-gray-950 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <p>Copyright © {currentYear} Labuan FSA. All rights reserved.</p>
+            <p>Copyright © {currentYear} Maldives FSA. All rights reserved.</p>
             <div className="flex space-x-6 mt-2 md:mt-0">
               <a href="#disclaimer" className="hover:text-blue-400 transition-colors">
                 Disclaimer
