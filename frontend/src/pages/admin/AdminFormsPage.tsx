@@ -14,6 +14,7 @@ export function AdminFormsPage() {
   const { showConfirm } = useConfirmDialog()
   const queryClient = useQueryClient()
   const [forms, setForms] = useState<FormResponse[]>([])
+  const [loadedForms, setLoadedForms] = useState<FormResponse[]>([]) // Forms confirmed loaded (200/304)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [togglingFormId, setTogglingFormId] = useState<string | null>(null)
@@ -26,15 +27,91 @@ export function AdminFormsPage() {
 
   const loadForms = async () => {
     setLoading(true)
+    setLoadedForms([])
+    
     try {
-      // Admin panel should show ALL forms (active and inactive)
+      // Use centralized apiClient - GitHub API loads sequentially internally (forms.0.json, forms.1.json, etc.)
+      const loadStartTime = performance.now()
+      console.log(`[AdminFormsPage] 🚀 Starting form loading at ${new Date().toISOString()}`)
+      console.log(`[AdminFormsPage] 📡 API client will load forms sequentially from GitHub endpoints`)
+      
+      // Load forms - apiClient handles sequential loading internally
       const data = await apiClient.getForms({ includeInactive: true })
+      
+      const loadEndTime = performance.now()
+      const totalTime = (loadEndTime - loadStartTime).toFixed(2)
+      console.log(`[AdminFormsPage] ✅ All forms confirmed loaded from endpoints (200/304 status): ${data.length} forms in ${totalTime}ms`)
+      console.log(`[AdminFormsPage] 📊 Forms breakdown:`, {
+        total: data.length,
+        active: data.filter(f => f.isActive).length,
+        inactive: data.filter(f => !f.isActive).length
+      })
+      
+      // Set all forms (this ensures fallback if progressive animation fails)
       setForms(data)
+      
+      // Progressive display animation - show forms in batches after they're verified loaded
+      if (data.length > 0) {
+        console.log(`[AdminFormsPage] 🎬 Starting progressive display animation for ${data.length} verified forms`)
+        setLoading(false) // Allow UI to start displaying
+        try {
+          await displayFormsProgressively(data)
+        } catch (animationError) {
+          // If progressive animation fails, fallback to showing all forms immediately
+          console.warn(`[AdminFormsPage] ⚠️ Progressive animation failed, falling back to display all forms:`, animationError)
+          setLoadedForms(data)
+        }
+      } else {
+        console.log(`[AdminFormsPage] ⚠️ No forms found`)
+        setLoadedForms([])
+        setLoading(false)
+      }
     } catch (error) {
-      console.error('Error loading forms:', error)
-    } finally {
+      console.error(`[AdminFormsPage] ❌ Error loading forms:`, error)
+      showError('Failed to load forms', 'Error')
       setLoading(false)
     }
+  }
+
+  const displayFormsProgressively = async (allForms: FormResponse[]) => {
+    const BATCH_SIZE = 6 // Display 6 forms at a time (2 rows in grid)
+    const BATCH_DELAY = 100 // Delay between batches in ms
+    const displayStartTime = performance.now()
+    
+    console.log(`[AdminFormsPage] 🎨 Rendering ${allForms.length} forms progressively in batches of ${BATCH_SIZE}`)
+    
+    for (let i = 0; i < allForms.length; i += BATCH_SIZE) {
+      const batch = allForms.slice(i, i + BATCH_SIZE)
+      const batchStartTime = performance.now()
+      
+      // Update loaded forms state to trigger render
+      setLoadedForms((prev) => {
+        const updated = [...prev, ...batch]
+        const batchEndTime = performance.now()
+        const batchTime = (batchEndTime - batchStartTime).toFixed(2)
+        console.log(`[AdminFormsPage] ✨ Batch ${Math.floor(i / BATCH_SIZE) + 1}: Displayed ${batch.length} forms (${i + 1}-${Math.min(i + BATCH_SIZE, allForms.length)}/${allForms.length}) in ${batchTime}ms`)
+        return updated
+      })
+      
+      // Small delay for smooth animation between batches
+      if (i + BATCH_SIZE < allForms.length) {
+        await new Promise(resolve => setTimeout(resolve, BATCH_DELAY))
+      }
+    }
+    
+    const displayEndTime = performance.now()
+    const displayTime = (displayEndTime - displayStartTime).toFixed(2)
+    
+    // Ensure all forms are set in loadedForms (safety check)
+    setLoadedForms((prev) => {
+      if (prev.length === allForms.length) {
+        console.log(`[AdminFormsPage] ✅ Progressive display complete: ${allForms.length} forms rendered with animation in ${displayTime}ms`)
+        return prev
+      } else {
+        console.warn(`[AdminFormsPage] ⚠️ Progressive display incomplete: ${prev.length}/${allForms.length} forms. Setting all forms.`)
+        return allForms
+      }
+    })
   }
 
   // Toggle form active status mutation
@@ -108,19 +185,23 @@ export function AdminFormsPage() {
   }
 
   const filteredForms = React.useMemo(() => {
+    // Use loadedForms for progressive display, always fallback to forms if loadedForms is empty
+    // This ensures forms are always displayed even if progressive animation fails
+    const formsToFilter = loadedForms.length > 0 ? loadedForms : forms
+    
     if (!searchTerm.trim()) {
-      return forms
+      return formsToFilter
     }
     
     const searchLower = searchTerm.toLowerCase().trim()
-    return forms.filter(
+    return formsToFilter.filter(
     (form) =>
         (form.name && form.name.toLowerCase().includes(searchLower)) ||
         (form.formId && form.formId.toLowerCase().includes(searchLower)) ||
         (form.description && form.description.toLowerCase().includes(searchLower)) ||
         (form.category && form.category.toLowerCase().includes(searchLower))
   )
-  }, [forms, searchTerm])
+  }, [loadedForms, forms, searchTerm])
 
   return (
     <div className="space-y-6">
@@ -155,14 +236,22 @@ export function AdminFormsPage() {
       </div>
 
       {/* Forms Grid */}
-      {loading ? (
+      {loading && loadedForms.length === 0 ? (
         <Loading message="Loading forms..." />
-      ) : filteredForms.length === 0 ? (
+      ) : filteredForms.length === 0 && !loading ? (
         <div className="text-center py-12 text-gray-500">No forms found</div>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredForms.map((form) => (
-            <div key={form.id} className="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow">
+          {filteredForms.map((form, index) => (
+            <div 
+              key={form.id} 
+              className="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow animate-fadeIn"
+              style={{
+                animationDelay: `${Math.min(index * 50, 500)}ms`,
+                animationFillMode: 'both',
+                opacity: 0
+              }}
+            >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900">{form.name}</h3>
